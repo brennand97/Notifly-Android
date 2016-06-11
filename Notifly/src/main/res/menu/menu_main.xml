@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/clear_list"
+        android:icon="@mipmap/check_green"
+        android:title="@string/options_menu_clear" />
+    <item android:id="@+id/service_toggle"
+        android:icon="@mipmap/network_blue"
+        android:title="@string/options_menu_toggle_service_stop" />
+</menu>

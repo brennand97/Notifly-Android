@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Notifly</string>
+    <string name="title_activity_fab">FAB</string>
+    <string name="dialog_title">Choose Device</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_connect">Connect</string>
+    <string name="permission_failure">Cannot scan without permission.</string>
+    <string name="dialog_scan_unknown_name">Unknown</string>
+    <string name="dialog_bluetooth_scan_complete">Scan Complete</string>
+    <string name="title_activity_test">test</string>
+    <string name="options_menu_clear">Clear device list</string>
+    <string name="options_menu_toggle_service_stop">Stop</string>
+    <string name="options_menu_toggle_service_start">Start</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="clear_device_sure">Clear devices?</string>
+    <string name="fab_click_no_bluetooth">Bluetooth must be enabled.</string>
+    <string name="dialog_device_add_failed">Failed to add device</string>
+</resources>
