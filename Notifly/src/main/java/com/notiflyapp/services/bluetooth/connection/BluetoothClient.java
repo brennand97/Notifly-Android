@@ -115,7 +115,7 @@ public class BluetoothClient {
      *
      * @param msg DataObject to be sent to client device
      */
-    public void sendMsg(DataObject<String, java.io.File> msg) {
+    public void sendMsg(DataObject msg) {
         loop.send(msg);
         sent.add(msg);
     }

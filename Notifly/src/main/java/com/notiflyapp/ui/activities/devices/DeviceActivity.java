@@ -86,19 +86,22 @@ public class DeviceActivity extends AppCompatActivity {
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        int coarsePermission = ActivityCompat.checkSelfPermission(DeviceActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
-                        if (coarsePermission == PackageManager.PERMISSION_GRANTED) {
+                BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
+                if(bta != null) {
+                    if(bta.isEnabled()) {
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            int coarsePermission = ActivityCompat.checkSelfPermission(DeviceActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
+                            if (coarsePermission == PackageManager.PERMISSION_GRANTED) {
+                                bluetoothDeviceSelect();
+                                return;
+                            }
+                            ActivityCompat.requestPermissions(DeviceActivity.this, new String[]{ android.Manifest.permission.ACCESS_COARSE_LOCATION }, REQUEST_COARSE_LOCATION_PERMISSIONS);
+                        } else {
                             bluetoothDeviceSelect();
-                            return;
                         }
-                        ActivityCompat.requestPermissions(DeviceActivity.this, new String[]{ android.Manifest.permission.ACCESS_COARSE_LOCATION }, REQUEST_COARSE_LOCATION_PERMISSIONS);
                     } else {
-                        bluetoothDeviceSelect();
+                        Toast.makeText(DeviceActivity.this, R.string.fab_click_no_bluetooth, Toast.LENGTH_LONG).show();
                     }
-                } else {
-                   Toast.makeText(DeviceActivity.this, R.string.fab_click_no_bluetooth, Toast.LENGTH_LONG).show();
                 }
             }
         });
