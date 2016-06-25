@@ -1,5 +1,8 @@
 package com.notiflyapp.data.requestframework;
 
+import android.content.Context;
+
+import com.notiflyapp.asynctasks.ReceiveContactByThreadId;
 import com.notiflyapp.services.bluetooth.connection.BluetoothClient;
 
 import java.util.HashMap;
@@ -12,6 +15,11 @@ public class RequestHandler {
     public final static class RequestCode {
 
         public final static String CONTACT_BY_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONTACT_BY_THREAD_ID";
+            /**
+             * @type String[]
+             * This is a String array that will contain the contact ids of all contacts associated with given thread id
+             */
+            public final static String EXTRA_CONTACT_BY_THREAD_ID_CONTACT_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_CONTACT_ID";
             /**
              * @type String[]
              * This is a String array that will contain the names of all contacts associated with given thread id
@@ -30,31 +38,35 @@ public class RequestHandler {
 
     }
 
-    private HashMap<String, Request> requestHashMap = new HashMap<>();  //String is the UUID of the request in string form and the Request object is the request itself
-    private HashMap<String, ResponseCallback> callbackHashMap = new HashMap<>();  //String is the UUID of the request in string form and the ResponseCallback is the callback assigned with the request
+    private HashMap<String, Request> requestHashMap = new HashMap<>();              //String is the UUID of the request in string form and the Request object is the request itself
+    private HashMap<String, BluetoothClient> clientHashMap = new HashMap<>();       //String is the UUID of the request in string form and the BluetoothClient is the client related to the request
+    private HashMap<String, ResponseCallback> callbackHashMap = new HashMap<>();    //String is the UUID of the request in string form and the ResponseCallback is the callback assigned with the request
 
     private static RequestHandler handler;
+    private Context context;
 
-    private RequestHandler() {
-
+    private RequestHandler(Context context) {
+        this.context = context;
     }
 
     public interface ResponseCallback {
         void responseReceived(Request request, Response response);
     }
 
-    public static RequestHandler getInstance() {
+    public static RequestHandler getInstance(Context context) {
         if(handler == null) {
-            handler = new RequestHandler();
+            handler = new RequestHandler(context);
         }
         return handler;
     }
 
-    public void handleRequest(Request request) {
+    public void handleRequest(BluetoothClient client, Request request) {
+        clientHashMap.put(request.getExtra().toString(), client);
         Response response = Response.makeResponse(request);
         switch (request.getBody()) {
             case RequestCode.CONTACT_BY_THREAD_ID:
-
+                ReceiveContactByThreadId task = new ReceiveContactByThreadId(context);
+                task.execute(response);
                 break;
             default:
                 //TODO handle if the given key does not match any of the defined request codes
@@ -63,10 +75,12 @@ public class RequestHandler {
     }
 
     public void handleResponse(Response response) {
-        if(requestHashMap.containsKey(response.getExtra().toString())) {
+        if(callbackHashMap.containsKey(response.getExtra().toString()) && requestHashMap.containsKey(response.getExtra().toString())) {
             //TODO handle the incoming of a requested response
             String uuid = response.getExtra().toString();
             callbackHashMap.get(uuid).responseReceived(requestHashMap.get(uuid), response);
+            callbackHashMap.remove(response.getExtra().toString());
+            requestHashMap.remove(response.getExtra().toString());
         } else {
             //The response doesn't have a matching request so for now just drop
         }
@@ -79,12 +93,13 @@ public class RequestHandler {
         client.sendMsg(request);
     }
 
-    public void sendRequest(String requestCode) {
-
-    }
-
     public void sendResponse(Response response) {
-
+        String uuid = response.getExtra().toString();
+        if(clientHashMap.containsKey(uuid)) {
+            BluetoothClient client = clientHashMap.get(uuid);
+            client.sendMsg(response);
+            clientHashMap.remove(uuid);
+        }
     }
 
 }

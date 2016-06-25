@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.notiflyapp.R;
 import com.notiflyapp.services.bluetooth.scan.BluetoothScanService;
@@ -80,8 +81,14 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
                         Intent intent = new Intent(getActivity(), BluetoothScanService.class);
                         getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
                     }
+                    if(total == 5000) {
+                        Log.w(ConnectBluetoothDialogFragment.class.getSimpleName(), "Failed to connect to service to begin bluetooth discovery");
+                        //TODO update dialog with a scan failed label
+                        //for now a toast will suffice
+                        Toast.makeText(getActivity(), "Bluetooth scan failed.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
                 }
-                connectBluetoothAdapter.addAll(mService.getPairedDevices());
                 mService.startScan(mDeviceFoundCallback);
             }
         };
