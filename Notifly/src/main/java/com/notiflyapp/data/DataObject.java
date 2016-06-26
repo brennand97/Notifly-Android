@@ -15,15 +15,24 @@ public abstract class DataObject< A, B > implements Serializable {
 
 
     /**
-     * Enum Type provides each possible instance's type of DataObject
+     * Type provides each possible instance's type of DataObject
      */
-    public enum Type { SMS, MMS, NOTIFICATION, DEVICEINFO, REQUEST }
+    public final static class Type {
+        public final static String SMS = "sms";
+        public final static String MMS = "mms";
+        public final static String NOTIFICATION = "notification";
+        public final static String DEVICE_INFO = "device_info";
+        public final static String REQUEST = "request";
+        public final static String RESPONSE = "response";
+        public final static String STATUS = "status";
+    }
 
 
     /**
      * Stores the instance's type
      */
-    protected Type type;
+    protected String type;
+
     /**
      * Stores the sender of the DataObject (aka the device name or mac address)
      */
@@ -40,7 +49,7 @@ public abstract class DataObject< A, B > implements Serializable {
      *
      * @return DataObject.Type, the type of DataObject for the current instance
      */
-    public Type getType() {
+    public String getType() {
         return  type;
     }
 

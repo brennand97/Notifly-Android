@@ -200,7 +200,8 @@ public class DeviceActivity extends AppCompatActivity {
                     Manifest.permission.RECEIVE_MMS,
                     Manifest.permission.READ_SMS,
                     Manifest.permission.SEND_SMS,
-                    Manifest.permission.READ_PHONE_STATE
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_CONTACTS
             };
             int[] permissions = new int[stringList.length];
             for (int i = 0; i < stringList.length; i++) {
@@ -210,7 +211,7 @@ public class DeviceActivity extends AppCompatActivity {
             for (int i = 0; i < permissions.length; i++) {
                 total += permissions[i];
             }
-            if (total == (PackageManager.PERMISSION_GRANTED * 5)) {
+            if (total == (PackageManager.PERMISSION_GRANTED * stringList.length)) {
                 continueStartSmsService();
                 return;
             }
@@ -286,7 +287,7 @@ public class DeviceActivity extends AppCompatActivity {
                 if(allAccepted) {
                     continueStartSmsService();
                 } else {
-                    Toast.makeText(this, "Cannot use SMS without permission.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Cannot continue without SMS + Contact permissions.", Toast.LENGTH_LONG).show();
                 }
             }
         }

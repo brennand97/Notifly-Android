@@ -19,7 +19,7 @@ public class Response extends DataObject<String , UUID> {
 
     private Response() {
         super();
-        type = Type.REQUEST;
+        type = Type.RESPONSE;
     }
 
     public static Response makeResponse(Request request) {
@@ -37,7 +37,7 @@ public class Response extends DataObject<String , UUID> {
      * @return a general object that is defined by extra key
      */
     public Object getItem(String key) {
-        return hashMap;
+        return hashMap.get(key);
     }
 
     /**

@@ -1,8 +1,9 @@
 package com.notiflyapp.data.requestframework;
 
 import android.content.Context;
+import android.util.Log;
 
-import com.notiflyapp.asynctasks.ReceiveContactByThreadId;
+import com.notiflyapp.tasks.ReceiveContactByThreadId;
 import com.notiflyapp.services.bluetooth.connection.BluetoothClient;
 
 import java.util.HashMap;
@@ -11,6 +12,8 @@ import java.util.HashMap;
  * Created by Brennan on 6/23/2016.
  */
 public class RequestHandler {
+
+    private final static String TAG = RequestHandler.class.getSimpleName();
 
     public final static class RequestCode {
 
@@ -61,13 +64,14 @@ public class RequestHandler {
     }
 
     public void handleRequest(BluetoothClient client, Request request) {
+        Log.v(TAG, "Received request : " + request.getExtra().toString() + " from : " + client.getDeviceMac() + " for : " + request.getBody());
         clientHashMap.put(request.getExtra().toString(), client);
         Response response = Response.makeResponse(request);
         switch (request.getBody()) {
             case RequestCode.CONTACT_BY_THREAD_ID:
-                ReceiveContactByThreadId task = new ReceiveContactByThreadId(context);
-                task.execute(response);
-                break;
+                ReceiveContactByThreadId task = new ReceiveContactByThreadId(context, response);
+                task.start();
+            break;
             default:
                 //TODO handle if the given key does not match any of the defined request codes
                 break;
@@ -98,6 +102,7 @@ public class RequestHandler {
         if(clientHashMap.containsKey(uuid)) {
             BluetoothClient client = clientHashMap.get(uuid);
             client.sendMsg(response);
+            Log.v(TAG, "Response : " + response.getExtra().toString() + " sent");
             clientHashMap.remove(uuid);
         }
     }

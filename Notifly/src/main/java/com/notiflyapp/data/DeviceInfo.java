@@ -20,12 +20,12 @@ public class DeviceInfo extends DataObject<String, File> {
      */
     public DeviceInfo() {
         super();
-        type = Type.DEVICEINFO;
+        type = Type.DEVICE_INFO;
     }
 
     public DeviceInfo(String deviceName, String deviceMac, int deviceType) {
         super();
-        type = Type.DEVICEINFO;
+        type = Type.DEVICE_INFO;
         this.deviceName = deviceName;
         this.deviceMac = deviceMac;
         this.deviceType = deviceType;

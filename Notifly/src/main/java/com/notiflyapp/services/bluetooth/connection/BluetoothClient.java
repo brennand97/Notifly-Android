@@ -1,12 +1,15 @@
 package com.notiflyapp.services.bluetooth.connection;
 
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
 import com.notiflyapp.data.DataObject;
 import com.notiflyapp.data.DeviceInfo;
+import com.notiflyapp.data.requestframework.Request;
+import com.notiflyapp.data.requestframework.RequestHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,13 +46,15 @@ public class BluetoothClient {
     }
 
     private Handler mHandler = BluetoothService.mServiceHandler;
+    private Context context;
 
     /**
      *
      * @param macAddress    BluetoothDevice Mac Address that is being connected
      * @param conn      The uninitialized connection received by the service
      */
-    public BluetoothClient(String macAddress, BluetoothSocket conn) {
+    public BluetoothClient(Context context, String macAddress, BluetoothSocket conn) {
+        this.context = context;
         loop = new ClientLoop(this, conn);
         deviceMac = macAddress;
     }
@@ -92,11 +97,19 @@ public class BluetoothClient {
      * @param object DataObject received from client
      */
     protected void receivedMsg(DataObject object) {
-        Message msg = mHandler.obtainMessage();
-        msg.what = BluetoothService.INCOMING_MESSAGE;
-        msg.obj = object;
-        msg.sendToTarget();
-        received.add(object);
+        if(object == null) {
+            return;
+        }
+        if(object.getType().equals(DataObject.Type.REQUEST)) {
+            RequestHandler.getInstance(context).handleRequest(this, (Request) object);
+        } else {
+            Message msg = mHandler.obtainMessage();
+            msg.what = BluetoothService.INCOMING_MESSAGE;
+            msg.obj = object;
+            msg.sendToTarget();
+            received.add(object);
+        }
+
     }
 
 

@@ -14,7 +14,6 @@ public class SMS extends DataObject<String, File> {
     private int id;
     private String address;
     private String originatingAddress;
-    private String body;
     private String creator;
     private long date;
     private long dateSent;

@@ -19,6 +19,9 @@ import com.notiflyapp.data.DataObject;
 import com.notiflyapp.data.DeviceInfo;
 import com.notiflyapp.data.SMS;
 import com.notiflyapp.data.Serial;
+import com.notiflyapp.data.requestframework.Request;
+import com.notiflyapp.data.requestframework.RequestHandler;
+import com.notiflyapp.data.requestframework.Response;
 import com.notiflyapp.database.DatabaseFactory;
 import com.notiflyapp.database.DeviceDatabase;
 import com.notiflyapp.database.DeviceNotFoundException;
@@ -91,7 +94,7 @@ public class BluetoothService extends Service {
                         Log.w(TAG, "Device with MAC : " + deviceInfo.getDeviceMac() + " did not connect");
                     }
                     if (bluetoothSocket != null) {
-                        BluetoothClient bluetoothClient = new BluetoothClient(macAddress, bluetoothSocket);
+                        BluetoothClient bluetoothClient = new BluetoothClient(getApplicationContext(), macAddress, bluetoothSocket);
                         connectedClients.add(bluetoothClient);
 
                         AsyncDevice backgroundThread = new AsyncDevice();
@@ -113,13 +116,13 @@ public class BluetoothService extends Service {
                     Object obj = msg.obj;
                     if(obj instanceof DataObject)
                     switch (((DataObject) obj).getType()) {
-                        case DEVICEINFO:
+                        case DataObject.Type.DEVICE_INFO:
 
                             break;
-                        case MMS:
+                        case DataObject.Type.MMS:
 
                             break;
-                        case SMS:
+                        case DataObject.Type.SMS:
                             try{
                                 Intent smsService = new Intent(BluetoothService.this, SmsService.class);
                                 smsService.setAction(SmsService.ACTION_SEND_SMS);
@@ -129,13 +132,15 @@ public class BluetoothService extends Service {
                                 e.printStackTrace();
                             }
                             break;
-                        case NOTIFICATION:
+                        case DataObject.Type.NOTIFICATION:
 
                             break;
-                        case REQUEST:
-
+                        case DataObject.Type.REQUEST:
+                            //Look in BluetoothClient because due to nature of object must be handled in the BluetoothLClient class itself
                             break;
-
+                        case DataObject.Type.RESPONSE:
+                            RequestHandler.getInstance(getApplicationContext()).handleResponse((Response) obj);
+                            break;
                     }
 
                     break;

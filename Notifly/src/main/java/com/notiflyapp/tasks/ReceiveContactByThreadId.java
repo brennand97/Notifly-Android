@@ -1,32 +1,34 @@
-package com.notiflyapp.asynctasks;
+package com.notiflyapp.tasks;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.util.Log;
 
 import com.notiflyapp.data.requestframework.RequestHandler;
 import com.notiflyapp.data.requestframework.Response;
 import com.notiflyapp.data.requestframework.RequestHandler.RequestCode;
 
-import java.util.ArrayList;
-
 /**
  * Created by Brennan on 6/25/2016.
  */
-public class ReceiveContactByThreadId extends AsyncTask<Response, Response, Response> {
+public class ReceiveContactByThreadId extends Thread {
 
+    private static final String TAG = ReceiveContactByThreadId.class.getSimpleName();
     private Context context;
 
-    public ReceiveContactByThreadId(Context context) {
+    private Response response;
+
+    public ReceiveContactByThreadId(Context context, Response response) {
         this.context = context;
+        this.response = response;
     }
 
     @Override
-    protected Response doInBackground(Response... params) {
-        Response r = params[0];
-
+    public void run() {
+        Response r = response;
+        Log.v(TAG, "Calling on all contacts");
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, null);
@@ -64,11 +66,7 @@ public class ReceiveContactByThreadId extends AsyncTask<Response, Response, Resp
             }
         }
 
-        return r;
-    }
-
-    @Override
-    protected void onPostExecute(Response r) {
         RequestHandler.getInstance(context).sendResponse(r);
     }
+
 }

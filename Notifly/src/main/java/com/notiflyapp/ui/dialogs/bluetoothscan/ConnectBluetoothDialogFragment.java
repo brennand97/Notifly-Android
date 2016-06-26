@@ -81,7 +81,7 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
                         Intent intent = new Intent(getActivity(), BluetoothScanService.class);
                         getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
                     }
-                    if(total == 5000) {
+                    if(total >= 5000) {
                         Log.w(ConnectBluetoothDialogFragment.class.getSimpleName(), "Failed to connect to service to begin bluetooth discovery");
                         //TODO update dialog with a scan failed label
                         //for now a toast will suffice
@@ -89,7 +89,9 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
                         return;
                     }
                 }
+                Log.v(ConnectBluetoothDialogFragment.class.getSimpleName(), "Bluetooth scan started");
                 mService.startScan(mDeviceFoundCallback);
+                connectBluetoothAdapter.addAll(mService.getPairedDevices());
             }
         };
         (new Thread(runnable)).start();
