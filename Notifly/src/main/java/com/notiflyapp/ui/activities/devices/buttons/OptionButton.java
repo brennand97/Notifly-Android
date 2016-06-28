@@ -29,7 +29,7 @@ public abstract class OptionButton implements View.OnClickListener {
 
     public OptionButton(Activity activity, DeviceInfo di) {
         this.activity = activity;
-        deviceInfo = di;
+        deviceInfo = DeviceInfo.replicate(di);
         deviceInfoOld = di;
         deviceDatabase = DatabaseFactory.getDeviceDatabase(activity);
     }
@@ -78,7 +78,7 @@ public abstract class OptionButton implements View.OnClickListener {
         }
 
         deviceInfoOld = deviceInfo;
-
+        deviceInfo = DeviceInfo.replicate(deviceInfoOld);
     }
 
 }

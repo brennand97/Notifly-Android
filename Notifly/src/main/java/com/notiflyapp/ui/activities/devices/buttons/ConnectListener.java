@@ -17,7 +17,7 @@ public class ConnectListener extends OptionButton  {
 
     @Override
     public void onClick(View v) {
-        if(deviceInfo.getOptionConnect()) {
+        if(deviceInfoOld.getOptionConnect()) {
             //TODO update UI from connected to not
             deviceInfo.setOptionConnect(false);
         } else {

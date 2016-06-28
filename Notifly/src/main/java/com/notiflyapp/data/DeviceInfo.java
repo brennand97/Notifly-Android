@@ -23,6 +23,17 @@ public class DeviceInfo extends DataObject<String, File> {
         type = Type.DEVICE_INFO;
     }
 
+    public static synchronized DeviceInfo replicate(DeviceInfo di) {
+        DeviceInfo fdi = new DeviceInfo();
+        fdi.setDeviceName(di.getDeviceName());
+        fdi.setDeviceMac(di.getDeviceMac());
+        fdi.setDeviceType(di.getDeviceType());
+        fdi.setOptionConnect(di.getOptionConnect());
+        fdi.setOptionNotification(di.getOptionNotification());
+        fdi.setOptionSMS(di.getOptionSMS());
+        return fdi;
+    }
+
     public DeviceInfo(String deviceName, String deviceMac, int deviceType) {
         super();
         type = Type.DEVICE_INFO;

@@ -1,6 +1,7 @@
 package com.notiflyapp.services.bluetooth.connection;
 
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -69,6 +70,7 @@ public class ClientLoop {
                     bytes = mmInStream.read(header);
                     if(bytes == -1) { // Catch for a client drop/disconnect
                         Log.i("Bluetooth Client", "Disconnected");
+                        client.handleDisconnect();
                         break;
                     }
                     headerValue = retrieveHeader(header);
@@ -87,6 +89,7 @@ public class ClientLoop {
                     Log.v(TAG, "bytes in : " + String.valueOf(bytes));
                     if(bytes == -1) { // Catch for a client drop/disconnect
                         Log.i("Bluetooth Client", "Disconnected");
+                        client.handleDisconnect();
                         break;
                     }
                     dataIn(buffer);

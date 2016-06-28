@@ -1,7 +1,9 @@
 package com.notiflyapp.services.bluetooth.connection;
 
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -10,6 +12,10 @@ import com.notiflyapp.data.DataObject;
 import com.notiflyapp.data.DeviceInfo;
 import com.notiflyapp.data.requestframework.Request;
 import com.notiflyapp.data.requestframework.RequestHandler;
+import com.notiflyapp.database.DatabaseFactory;
+import com.notiflyapp.database.DeviceNotFoundException;
+import com.notiflyapp.database.NullCursorException;
+import com.notiflyapp.database.NullMacAddressException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +36,8 @@ public class BluetoothClient {
     private String deviceName;  //Device's name obtained from received DataInfo DataObject on connect
     private String deviceMac;   //Device's Mac Address obtained from received DataInfo DataObject on connect
     private int deviceType;  //Device's Type obtained from received DataInfo DataObject on connect (Ex. Phone, Tablet, Laptop)
+    private DeviceInfo deviceInfo;
+    private BluetoothDevice device;
 
     public static class Type {
         public static final int MISC              = 0x0000;
@@ -53,10 +61,11 @@ public class BluetoothClient {
      * @param macAddress    BluetoothDevice Mac Address that is being connected
      * @param conn      The uninitialized connection received by the service
      */
-    public BluetoothClient(Context context, String macAddress, BluetoothSocket conn) {
+    public BluetoothClient(Context context, BluetoothSocket conn, BluetoothDevice device, DeviceInfo di) {
         this.context = context;
         loop = new ClientLoop(this, conn);
-        deviceMac = macAddress;
+        this.device = device;
+        setDeviceData(di);
     }
 
     protected void startLoop() {
@@ -86,6 +95,7 @@ public class BluetoothClient {
         deviceName = di.getDeviceName();    //Retrieves the device name provided by the device
         deviceMac = di.getDeviceMac();      //Retrieves the device Mac Address provided by the device
         deviceType = di.getDeviceType();    //Retrieves the device Type provided by the device
+        deviceInfo = di;
     }
 
 
@@ -131,6 +141,17 @@ public class BluetoothClient {
     public void sendMsg(DataObject msg) {
         loop.send(msg);
         sent.add(msg);
+    }
+
+    protected void handleDisconnect() {
+        try {
+            Intent intent = new Intent(context, BluetoothService.class);
+            intent.setAction(BluetoothService.DISCONNECT_DEVICE);
+            intent.putExtra(BluetoothService.DEVICE_INDEX, DatabaseFactory.getDeviceDatabase(context).getId(deviceInfo));
+            context.startService(intent);
+        } catch (NullMacAddressException | DeviceNotFoundException | NullCursorException e) {
+            e.printStackTrace();
+        }
     }
 
 

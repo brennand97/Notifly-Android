@@ -38,6 +38,8 @@ import java.util.UUID;
  */
 public class BluetoothService extends Service {
 
+    private final static String TAG = BluetoothService.class.getSimpleName();
+
     private final static UUID uuid = UUID.fromString("85023189-23c1-410c-a7c7-29a91f49f764");
     public final static String DEVICE_INDEX = "deviceIndex";
     public final static String MAC_ADDRESS = "macAddress";
@@ -99,7 +101,7 @@ public class BluetoothService extends Service {
                                 return;
                             }
                             if (bluetoothSocket != null) {
-                                BluetoothClient bluetoothClient = new BluetoothClient(getApplicationContext(), macAddress, bluetoothSocket);
+                                BluetoothClient bluetoothClient = new BluetoothClient(getApplicationContext(), bluetoothSocket, bluetoothDevice, deviceInfo);
                                 connectedClients.add(bluetoothClient);
 
                                 AsyncDevice backgroundThread = new AsyncDevice();
@@ -215,19 +217,16 @@ public class BluetoothService extends Service {
                     break;
                 case DISCONNECT_DEVICE:
                     int index = intent.getIntExtra(DEVICE_INDEX, -1);
-                    DeviceInfo DDdeviceInfo = null;
+                    DeviceInfo DDdeviceInfo;
                     try {
                         DDdeviceInfo = deviceDatabase.getDeviceInfo(index);
-                    } catch (DeviceNotFoundException e) {
+                        Log.v(TAG, "Disconnecting Device: " + DDdeviceInfo.getDeviceMac());
+                        if(deviceRunningByMac(DDdeviceInfo)) {
+                            BluetoothClient client = clientByMac(DDdeviceInfo);
+                            disconnectClient(client);
+                        }
+                    } catch (DeviceNotFoundException | NullCursorException e) {
                         e.printStackTrace();
-                        break;
-                    } catch (NullCursorException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                    if(deviceRunningByMac(DDdeviceInfo) && !DDdeviceInfo.getOptionConnect()) {
-                        BluetoothClient client = clientByMac(DDdeviceInfo);
-                        disconnectClient(client);
                     }
                     break;
                 case CONNECT_TO_DEVICE:
