@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -72,44 +73,51 @@ public class BluetoothService extends Service {
 
             switch (msg.what) {
                 case CONNECT_DEVICE:
-                    String macAddress = msg.getData().getString(MAC_ADDRESS);
-                    DeviceInfo deviceInfo;
-                    try {
-                        deviceInfo = deviceDatabase.getDeviceInfo(macAddress);
-                    } catch (DeviceNotFoundException e) {
-                        e.printStackTrace();
-                        break;
-                    } catch (NullCursorException e) {
-                        e.printStackTrace();
-                        break;
-                    }
+                    final String macAddress = msg.getData().getString(MAC_ADDRESS);
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            DeviceInfo deviceInfo;
+                            try {
+                                deviceInfo = deviceDatabase.getDeviceInfo(macAddress);
+                            } catch (DeviceNotFoundException e) {
+                                e.printStackTrace();
+                                return;
+                            } catch (NullCursorException e) {
+                                e.printStackTrace();
+                                return;
+                            }
 
-                    BluetoothDevice bluetoothDevice = mBluetoothAdapter.getRemoteDevice(macAddress);
-                    bluetoothDevice.fetchUuidsWithSdp();
-                    BluetoothSocket bluetoothSocket = null;
-                    try {
-                        bluetoothSocket = connectDevice(bluetoothDevice);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        Log.w(TAG, "Device with MAC : " + deviceInfo.getDeviceMac() + " did not connect");
-                    }
-                    if (bluetoothSocket != null) {
-                        BluetoothClient bluetoothClient = new BluetoothClient(getApplicationContext(), macAddress, bluetoothSocket);
-                        connectedClients.add(bluetoothClient);
+                            BluetoothDevice bluetoothDevice = mBluetoothAdapter.getRemoteDevice(macAddress);
+                            bluetoothDevice.fetchUuidsWithSdp();
+                            BluetoothSocket bluetoothSocket;
+                            try {
+                                bluetoothSocket = connectDevice(bluetoothDevice);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Log.w(TAG, "Device with MAC : " + deviceInfo.getDeviceMac() + " did not connect");
+                                return;
+                            }
+                            if (bluetoothSocket != null) {
+                                BluetoothClient bluetoothClient = new BluetoothClient(getApplicationContext(), macAddress, bluetoothSocket);
+                                connectedClients.add(bluetoothClient);
 
-                        AsyncDevice backgroundThread = new AsyncDevice();
-                        backgroundThread.execute(bluetoothClient);
+                                AsyncDevice backgroundThread = new AsyncDevice();
+                                backgroundThread.execute(bluetoothClient);
 
-                        bluetoothClient.sendMsg(thisDeviceInfo);
+                                bluetoothClient.sendMsg(thisDeviceInfo);
 
-                        if(bluetoothClient.isConnected() && deviceInfo.getOptionSMS()) {
-                            Intent pollMessages = new Intent(BluetoothService.this, SmsService.class);
-                            pollMessages.setAction(SmsService.ACTION_RETRIEVE_ALL_UNREAD_MESSAGES);
-                            startService(pollMessages);
+                                if(bluetoothClient.isConnected() && deviceInfo.getOptionSMS()) {
+                                    Intent pollMessages = new Intent(BluetoothService.this, SmsService.class);
+                                    pollMessages.setAction(SmsService.ACTION_RETRIEVE_ALL_UNREAD_MESSAGES);
+                                    startService(pollMessages);
+                                }
+
+                                Log.v(TAG, "Device connected.");
+                            }
                         }
-
-                        Log.v(TAG, "Device connected.");
-                    }
+                    };
+                    (new Thread(runnable)).start();
 
                     break;
                 case INCOMING_MESSAGE:
