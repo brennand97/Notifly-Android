@@ -341,7 +341,7 @@ public class BluetoothService extends Service {
         closeAllConnectedClients();
     }
 
-    private BluetoothSocket connectDevice(BluetoothDevice bluetoothDevice) throws IOException {
+    private synchronized BluetoothSocket connectDevice(BluetoothDevice bluetoothDevice) throws IOException {
         BluetoothSocket bluetoothSocket;
         bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(uuid);
         if(!bluetoothSocket.isConnected()) {
