@@ -74,6 +74,16 @@ public class ClientLoop {
                     headerValue = retrieveHeader(header);
                     byte[] buffer = new byte[headerValue];
                     bytes = mmInStream.read(buffer);
+                    //****************************************************************
+                    //Crucial for successful packet retrieval
+                    while(bytes < headerValue) {
+                        byte[] newBuffer = new byte[headerValue - bytes];
+                        bytes += mmInStream.read(newBuffer);
+                        for(int i = 0; i < newBuffer.length; i++) {
+                            buffer[headerValue - newBuffer.length + i] = newBuffer[i];
+                        }
+                    }
+                    //***************************************************************
                     Log.v(TAG, "bytes in : " + String.valueOf(bytes));
                     if(bytes == -1) { // Catch for a client drop/disconnect
                         Log.i("Bluetooth Client", "Disconnected");
@@ -87,20 +97,6 @@ public class ClientLoop {
             }
         }
 
-        /*  For Testing Purposes
-        for(int i = 0; i < 100; i++) {
-
-            try {
-                Thread.sleep(1000);
-                send(new SMS("Testing","1, 2, 3"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        */
-
     }
 
     private int retrieveHeader(byte[] header) {
@@ -111,9 +107,6 @@ public class ClientLoop {
     }
 
     public void dataIn(byte[] data) throws MalformedJsonException, JsonSyntaxException {
-        //These really shouldn't be problems anymore as all objects coming through should be strings
-        //This structure just remains out of complacency instead of just converting all the strings
-        //to the raw bytes directly
         String str = new String(data);
         Gson gson = new Gson();
         Log.v(TAG, str);
@@ -137,6 +130,12 @@ public class ClientLoop {
                 break;
             case DataObject.Type.RESPONSE:
                 obj = gson.fromJson(json, com.notiflyapp.data.requestframework.Response.class);
+                break;
+            case DataObject.Type.CONTACT:
+                obj = gson.fromJson(json, com.notiflyapp.data.Contact.class);
+                break;
+            case DataObject.Type.CONVERSATIONTHREAD:
+                obj = gson.fromJson(json, com.notiflyapp.data.ConversationThread.class);
                 break;
         }
         client.receivedMsg(obj);

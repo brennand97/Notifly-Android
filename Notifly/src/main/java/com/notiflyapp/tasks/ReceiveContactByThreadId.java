@@ -2,13 +2,19 @@ package com.notiflyapp.tasks;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.Telephony;
 import android.util.Log;
 
+import com.notiflyapp.data.Contact;
+import com.notiflyapp.data.ConversationThread;
 import com.notiflyapp.data.requestframework.RequestHandler;
 import com.notiflyapp.data.requestframework.Response;
 import com.notiflyapp.data.requestframework.RequestHandler.RequestCode;
+
+import java.util.ArrayList;
 
 /**
  * Created by Brennan on 6/25/2016.
@@ -27,46 +33,87 @@ public class ReceiveContactByThreadId extends Thread {
 
     @Override
     public void run() {
-        Response r = response;
-        Log.v(TAG, "Calling on all contacts");
-        Cursor cursor = null;
-        try {
-            cursor = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, null);
-            int contactIdIdx = cursor.getColumnIndex(Phone._ID);
-            int nameIdx = cursor.getColumnIndex(Phone.DISPLAY_NAME);
-            int phoneNumberIdx = cursor.getColumnIndex(Phone.NUMBER);
-            int photoIdIdx = cursor.getColumnIndex(Phone.PHOTO_ID);
-            cursor.moveToFirst();
+        ConversationThread t = new ConversationThread();
+        t.putBody(new ArrayList<Contact>());
+        Cursor cursorThread = null;
+        Cursor cursorConversation = null;
+        Cursor cursorContact = null;
 
-            String[] contactIds = new String[cursor.getCount()];
-            String[] names = new String[cursor.getCount()];
-            String[] phoneNumbers = new String[cursor.getCount()];
+        try {
+            cursorThread = context.getContentResolver().query(Uri.parse( "content://mms-sms/conversations?simple=true"), new String[] { Telephony.Threads.ARCHIVED, Telephony.Threads.DATE, Telephony.Threads.RECIPIENT_IDS },
+                    Telephony.Threads._ID + " = ?", new String[]{ response.getRequestValue() }, null);
+            String recipientString;
+
+            if (cursorThread == null) {
+                response.setData(null);
+                return;
+            }
+
+            int archived = cursorThread.getColumnIndex(Telephony.Threads.ARCHIVED);
+            int date = cursorThread.getColumnIndex(Telephony.Threads.DATE);
+            int recipientIdsX = cursorThread.getColumnIndex(Telephony.Threads.RECIPIENT_IDS);
+
+            cursorThread.moveToFirst();
+
+            t.setArchived(cursorThread.getInt(archived) == 1);
+            t.setDate(cursorThread.getString(date));
+            recipientString = cursorThread.getString(recipientIdsX);
+            String[] recipientIds = recipientString.split(" ");
+
+            cursorConversation = context.getContentResolver().query(Uri.parse("content://mms-sms/canonical-addresses"), new String[]{ "address" }, "_id = ?", recipientIds, null);
+
+            if(cursorConversation == null) {
+                response.setData(null);
+                return;
+            }
+            cursorConversation.moveToFirst();
+            String[] addresses = new String[cursorConversation.getCount()];
+
+            int address = cursorConversation.getColumnIndex("address");
+
+            for(int i = 0; i < cursorConversation.getCount(); i++) {
+                addresses[i] = cursorConversation.getString(address);
+            }
+
+            cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, Phone.NUMBER + " = ?", addresses, null);
+
+            if (cursorContact == null || cursorContact.getCount() == 0) {
+                response.setData(null);
+                return;
+            }
+            cursorContact.moveToFirst();
+
+            int contactIdIdx = cursorContact.getColumnIndex(Phone._ID);
+            int nameIdx = cursorContact.getColumnIndex(Phone.DISPLAY_NAME);
+            int phoneNumberIdx = cursorContact.getColumnIndex(Phone.NUMBER);
+            int photoIdIdx = cursorContact.getColumnIndex(Phone.PHOTO_ID);
 
             do {
-                contactIds[cursor.getPosition()] = cursor.getString(contactIdIdx);
-                names[cursor.getPosition()] = cursor.getString(nameIdx);
-                phoneNumbers[cursor.getPosition()] = cursor.getString(phoneNumberIdx);
-                //...
-            } while (cursor.moveToNext());
+                Contact c = new Contact();
 
-            r.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_CONTACT_ID, contactIds);
-            r.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_NAME, names);
-            r.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_PHONE_NUMBER, phoneNumbers);
+                c.putBody(cursorContact.getString(nameIdx));
+                c.putExtra(cursorContact.getString(phoneNumberIdx));
+                c.setContactId(cursorContact.getInt(contactIdIdx));
 
-        } catch (Exception e) {
+                t.addContact(c);
+            } while (cursorContact.moveToNext());
+
+        } catch (NullPointerException e) {
             e.printStackTrace();
 
-            r.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_CONTACT_ID, null);
-            r.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_NAME, null);
-            r.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_PHONE_NUMBER, null);
+            response.setData(null);
 
         } finally {
-            if (cursor != null) {
-                cursor.close();
+            if(cursorThread != null) {
+                cursorThread.close();
+            }
+            if (cursorContact != null) {
+                cursorContact.close();
             }
         }
 
-        RequestHandler.getInstance(context).sendResponse(r);
+        response.setData(t);
+        RequestHandler.getInstance(context).sendResponse(response);
     }
 
 }

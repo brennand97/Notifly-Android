@@ -3,6 +3,7 @@ package com.notiflyapp.data.requestframework;
 import android.content.Context;
 import android.util.Log;
 
+import com.notiflyapp.data.ConversationThread;
 import com.notiflyapp.tasks.ReceiveContactByThreadId;
 import com.notiflyapp.services.bluetooth.connection.BluetoothClient;
 
@@ -18,26 +19,7 @@ public class RequestHandler {
     public final static class RequestCode {
 
         public final static String CONTACT_BY_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONTACT_BY_THREAD_ID";
-            /**
-             * @type String[]
-             * This is a String array that will contain the contact ids of all contacts associated with given thread id
-             */
-            public final static String EXTRA_CONTACT_BY_THREAD_ID_CONTACT_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_CONTACT_ID";
-            /**
-             * @type String[]
-             * This is a String array that will contain the names of all contacts associated with given thread id
-             */
-            public final static String EXTRA_CONTACT_BY_THREAD_ID_NAME = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_NAME";
-            /**
-             * @type String[]
-             * This is a String array that will contain the phone numbers of all contacts associated with given thread id
-             */
-            public final static String EXTRA_CONTACT_BY_THREAD_ID_PHONE_NUMBER = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_PHONE_NUMBER";
-            /**
-             * @type Byte[][]
-             * This is a 2-dimensional byte array that will contain the the images (int byte[] form) of all contacts associated with given thread id
-             */
-            public final static String EXTRA_CONTACT_BY_THREAD_ID_IMAGE = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_IMAGE";
+            public final static String EXTRA_CONTACT_BY_THREAD_ID_THREAD = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD";
 
     }
 
@@ -66,9 +48,10 @@ public class RequestHandler {
     public void handleRequest(BluetoothClient client, Request request) {
         Log.v(TAG, "Received request : " + request.getExtra().toString() + " from : " + client.getDeviceMac() + " for : " + request.getBody());
         clientHashMap.put(request.getExtra().toString(), client);
-        Response response = Response.makeResponse(request);
+        Response response;
         switch (request.getBody()) {
             case RequestCode.CONTACT_BY_THREAD_ID:
+                response = Response.makeResponse(request, ConversationThread.class);
                 ReceiveContactByThreadId task = new ReceiveContactByThreadId(context, response);
                 task.start();
             break;
