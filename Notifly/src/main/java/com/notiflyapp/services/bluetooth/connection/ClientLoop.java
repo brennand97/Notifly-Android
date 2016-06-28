@@ -4,20 +4,20 @@ import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.MalformedJsonException;
 import com.notiflyapp.data.DataObject;
-import com.notiflyapp.data.Serial;
-import com.notiflyapp.data.Status;
+import com.notiflyapp.data.DataObjectDeserializer;
+import com.notiflyapp.data.requestframework.Response;
+import com.notiflyapp.data.requestframework.ResponseDeserializer;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -108,11 +108,14 @@ public class ClientLoop {
 
     public void dataIn(byte[] data) throws MalformedJsonException, JsonSyntaxException {
         String str = new String(data);
-        Gson gson = new Gson();
         Log.v(TAG, str);
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Response.class, new ResponseDeserializer());
+        gsonBuilder.registerTypeAdapter(DataObject.class, new DataObjectDeserializer());
+        Gson gson = gsonBuilder.create();
         JsonObject json = gson.fromJson(str, JsonObject.class);
         DataObject obj = null;
-        switch (json.get("type").toString().replace("\"","")) {
+        switch (json.get("type").getAsString()) {
             case DataObject.Type.SMS:
                 obj = gson.fromJson(json, com.notiflyapp.data.SMS.class);
                 break;
@@ -134,7 +137,7 @@ public class ClientLoop {
             case DataObject.Type.CONTACT:
                 obj = gson.fromJson(json, com.notiflyapp.data.Contact.class);
                 break;
-            case DataObject.Type.CONVERSATIONTHREAD:
+            case DataObject.Type.CONVERSATION_THREAD:
                 obj = gson.fromJson(json, com.notiflyapp.data.ConversationThread.class);
                 break;
         }

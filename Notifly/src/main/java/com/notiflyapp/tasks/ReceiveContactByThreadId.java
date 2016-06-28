@@ -45,7 +45,7 @@ public class ReceiveContactByThreadId extends Thread {
             String recipientString;
 
             if (cursorThread == null) {
-                response.setData(null);
+                response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
                 return;
             }
 
@@ -63,7 +63,7 @@ public class ReceiveContactByThreadId extends Thread {
             cursorConversation = context.getContentResolver().query(Uri.parse("content://mms-sms/canonical-addresses"), new String[]{ "address" }, "_id = ?", recipientIds, null);
 
             if(cursorConversation == null) {
-                response.setData(null);
+                response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
                 return;
             }
             cursorConversation.moveToFirst();
@@ -78,7 +78,7 @@ public class ReceiveContactByThreadId extends Thread {
             cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, Phone.NUMBER + " = ?", addresses, null);
 
             if (cursorContact == null || cursorContact.getCount() == 0) {
-                response.setData(null);
+                response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
                 return;
             }
             cursorContact.moveToFirst();
@@ -101,7 +101,7 @@ public class ReceiveContactByThreadId extends Thread {
         } catch (NullPointerException e) {
             e.printStackTrace();
 
-            response.setData(null);
+            response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
 
         } finally {
             if(cursorThread != null) {
@@ -112,7 +112,7 @@ public class ReceiveContactByThreadId extends Thread {
             }
         }
 
-        response.setData(t);
+        response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, t);
         RequestHandler.getInstance(context).sendResponse(response);
     }
 

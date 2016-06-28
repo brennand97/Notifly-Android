@@ -17,7 +17,7 @@ public class ConversationThread extends DataObject<ArrayList<Contact>, Integer> 
 
     public ConversationThread() {
         super();
-        this.type = Type.CONVERSATIONTHREAD;
+        this.type = Type.CONVERSATION_THREAD;
     }
 
     public void setArchived(boolean archived) {

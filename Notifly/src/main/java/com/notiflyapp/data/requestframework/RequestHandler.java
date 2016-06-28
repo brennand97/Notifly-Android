@@ -48,10 +48,9 @@ public class RequestHandler {
     public void handleRequest(BluetoothClient client, Request request) {
         Log.v(TAG, "Received request : " + request.getExtra().toString() + " from : " + client.getDeviceMac() + " for : " + request.getBody());
         clientHashMap.put(request.getExtra().toString(), client);
-        Response response;
+        Response response = Response.makeResponse(request);
         switch (request.getBody()) {
             case RequestCode.CONTACT_BY_THREAD_ID:
-                response = Response.makeResponse(request, ConversationThread.class);
                 ReceiveContactByThreadId task = new ReceiveContactByThreadId(context, response);
                 task.start();
             break;

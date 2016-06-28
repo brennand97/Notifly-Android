@@ -1,6 +1,5 @@
 package com.notiflyapp.data.requestframework;
 
-import com.notiflyapp.data.ConversationThread;
 import com.notiflyapp.data.DataObject;
 
 import java.util.HashMap;
@@ -9,34 +8,51 @@ import java.util.UUID;
 /**
  * Created by Brennan on 5/7/2016.
  */
-public class Response< T > extends DataObject<String , UUID> {
+public class Response extends DataObject<String , UUID> {
 
     private static final long serialVersionUID = 3349238414148539472L;
 
     //Body id the request string
     //Extra is UUID of specific message
     private String requestValue;
-    private T data;
+    private HashMap<String, DataObject> hashMap = new HashMap<>();   //Contains all data asked for in the request, keys are the extras associated with the request key
 
-    private Response() {
+    protected Response() {
         super();
         type = Type.RESPONSE;
     }
 
-    public static <E> Response makeResponse(Request request, Class<E> eClass) {
-        Response<E> response = new Response<>();
+    public static Response makeResponse(Request request) {
+        Response response = new Response();
         response.putBody(request.getBody());
         response.putExtra(request.getExtra());
         response.putRequestValue(request.getRequestValue());
         return response;
     }
 
-    public T getData() {
-        return data;
+    /**
+     * Returns data for the specified extra key string.
+     *
+     * @param key string associated with the request's key (body variable)
+     * @return a general object that is defined by extra key
+     */
+    public Object getItem(String key) {
+        return hashMap.get(key);
     }
 
-    public void setData(T t) {
-        data = t;
+    /**
+     * Put's an object into response object with correct extra key associated.
+     * This object can be called for with the same extra key.
+     *
+     * @param key defines what the object is and contains.
+     * @param object the DataObject that contains data itself.
+     */
+    public void putItem(String key, DataObject object) {
+        hashMap.put(key, object);
+    }
+
+    protected void putHashMap(HashMap<String, DataObject> map) {
+        hashMap = map;
     }
 
     /**
