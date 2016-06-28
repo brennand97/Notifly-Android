@@ -113,34 +113,7 @@ public class ClientLoop {
         gsonBuilder.registerTypeAdapter(Response.class, new ResponseDeserializer());
         gsonBuilder.registerTypeAdapter(DataObject.class, new DataObjectDeserializer());
         Gson gson = gsonBuilder.create();
-        JsonObject json = gson.fromJson(str, JsonObject.class);
-        DataObject obj = null;
-        switch (json.get("type").getAsString()) {
-            case DataObject.Type.SMS:
-                obj = gson.fromJson(json, com.notiflyapp.data.SMS.class);
-                break;
-            case DataObject.Type.MMS:
-                obj = gson.fromJson(json, com.notiflyapp.data.MMS.class);
-                break;
-            case DataObject.Type.DEVICE_INFO:
-                obj = gson.fromJson(json, com.notiflyapp.data.DeviceInfo.class);
-                break;
-            case DataObject.Type.NOTIFICATION:
-                obj = gson.fromJson(json, com.notiflyapp.data.Notification.class);
-                break;
-            case DataObject.Type.REQUEST:
-                obj = gson.fromJson(json, com.notiflyapp.data.requestframework.Request.class);
-                break;
-            case DataObject.Type.RESPONSE:
-                obj = gson.fromJson(json, com.notiflyapp.data.requestframework.Response.class);
-                break;
-            case DataObject.Type.CONTACT:
-                obj = gson.fromJson(json, com.notiflyapp.data.Contact.class);
-                break;
-            case DataObject.Type.CONVERSATION_THREAD:
-                obj = gson.fromJson(json, com.notiflyapp.data.ConversationThread.class);
-                break;
-        }
+        DataObject obj = gson.fromJson(str, DataObject.class);
         client.receivedMsg(obj);
     }
 
