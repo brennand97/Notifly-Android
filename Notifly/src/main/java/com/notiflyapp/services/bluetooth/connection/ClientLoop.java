@@ -108,7 +108,7 @@ public class ClientLoop {
 
     public void dataIn(byte[] data) throws MalformedJsonException, JsonSyntaxException {
         String str = new String(data);
-        Log.v(TAG, str);
+        //Log.v(TAG, str);
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Response.class, new ResponseDeserializer());
         gsonBuilder.registerTypeAdapter(DataObject.class, new DataObjectDeserializer());
