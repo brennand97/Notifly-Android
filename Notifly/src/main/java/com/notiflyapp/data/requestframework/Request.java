@@ -3,6 +3,7 @@ package com.notiflyapp.data.requestframework;
 import com.notiflyapp.data.DataObject;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -15,10 +16,41 @@ public class Request extends DataObject<String, UUID> {
     //Body id the request string
     //Extra is UUID of specific message
     private String requestValue;
+    private HashMap<String, DataObject> hashMap = new HashMap<>();
 
     public Request() {
         super();
         type = Type.REQUEST;
+        extra = UUID.randomUUID();
+    }
+
+    /**
+     * Returns data for the specified extra key string.
+     *
+     * @param key string associated with the request's key (body variable)
+     * @return a general object that is defined by extra key
+     */
+    public Object getItem(String key) {
+        return hashMap.get(key);
+    }
+
+    /**
+     * Put's an object into response object with correct extra key associated.
+     * This object can be called for with the same extra key.
+     *
+     * @param key defines what the object is and contains.
+     * @param object the DataObject that contains data itself.
+     */
+    public void putItem(String key, DataObject object) {
+        hashMap.put(key, object);
+    }
+
+    protected void putHashMap(HashMap<String, DataObject> map) {
+        hashMap = map;
+    }
+
+    protected HashMap<String, DataObject> getHashMap() {
+        return hashMap;
     }
 
     /**

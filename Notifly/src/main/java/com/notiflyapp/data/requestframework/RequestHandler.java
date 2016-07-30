@@ -1,12 +1,17 @@
 package com.notiflyapp.data.requestframework;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import com.notiflyapp.data.ConversationThread;
+import com.notiflyapp.data.SMS;
+import com.notiflyapp.data.Serial;
+import com.notiflyapp.services.sms.SmsService;
 import com.notiflyapp.tasks.ReceiveContactByThreadId;
 import com.notiflyapp.services.bluetooth.connection.BluetoothClient;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -20,6 +25,11 @@ public class RequestHandler {
 
         public final static String CONTACT_BY_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONTACT_BY_THREAD_ID";
             public final static String EXTRA_CONTACT_BY_THREAD_ID_THREAD = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD";
+
+        public final static String SEND_SMS = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.SEND_SMS";
+            public final static String EXTRA_SEND_SMS_SMSOBJECT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT";
+            public final static String CONFIRMATION_SEND_SMS_SENT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_SENT";
+            public final static String CONFIRMATION_SEND_SMS_FAILED = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_FAILED";
 
     }
 
@@ -53,7 +63,18 @@ public class RequestHandler {
             case RequestCode.CONTACT_BY_THREAD_ID:
                 ReceiveContactByThreadId task = new ReceiveContactByThreadId(context, response);
                 task.start();
-            break;
+                break;
+            case RequestCode.SEND_SMS:
+                try {
+                    Log.v(TAG, "Received send sms request");
+                    Intent smsIntent = new Intent(context, SmsService.class);
+                    smsIntent.setAction(SmsService.ACTION_SEND_SMS);
+                    smsIntent.putExtra(SmsService.EXTRA_REQUEST, Serial.serialize(request));
+                    context.startService(smsIntent);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
             default:
                 //TODO handle if the given key does not match any of the defined request codes
                 break;

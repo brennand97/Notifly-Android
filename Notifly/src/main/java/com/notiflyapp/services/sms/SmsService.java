@@ -17,6 +17,8 @@ import android.util.Log;
 import com.notiflyapp.data.MMS;
 import com.notiflyapp.data.SMS;
 import com.notiflyapp.data.Serial;
+import com.notiflyapp.data.requestframework.Request;
+import com.notiflyapp.data.requestframework.RequestHandler;
 import com.notiflyapp.services.bluetooth.connection.BluetoothService;
 import com.notiflyapp.services.bluetooth.scan.BluetoothScanService;
 import com.notiflyapp.sms.SmsReceiver;
@@ -34,6 +36,7 @@ public class SmsService extends Service {
     private static final String TAG = SmsService.class.getSimpleName();
 
     public static final String EXTRA_SMS_MESSAGE = "com.notiflyapp.services.sms.SmsService.EXTRA_SMS_MESSAGE";
+    public static final String EXTRA_REQUEST = "com.notiflyapp.services.sms.SmsService.EXTRA_REQUEST";
     public static final String ACTION_RECEIVE_SMS = "com.notiflyapp.services.sms.SmsService.ACTION_RECEIVE_SMS";
     public static final String EXTRA_MMS_MESSAGE = "com.notiflyapp.services.sms.SmsService.EXTRA_MMS_MESSAGE";
     public static final String ACTION_RECEIVE_MMS = "com.notiflyapp.services.sms.SmsService.ACTION_RECEIVE_MMS";
@@ -100,8 +103,8 @@ public class SmsService extends Service {
                         break;
                     case ACTION_SEND_SMS:
                         try {
-                            SMS toSend = (SMS) Serial.deserialize(intent.getByteArrayExtra(EXTRA_SMS_MESSAGE));
-                            sendSMS(toSend);
+                            Request request = (Request) Serial.deserialize(intent.getByteArrayExtra(EXTRA_REQUEST));
+                            sendSMS(request);
                         } catch (IOException | ClassNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -189,7 +192,9 @@ public class SmsService extends Service {
         }
     }
 
-    private void sendSMS(SMS toSend) {
+    private void sendSMS(Request request) {
+
+        SMS toSend = (SMS) request.getItem(RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT);
 
         String SENT = "sent";
         String DELIVERED = "delivered";
@@ -197,7 +202,9 @@ public class SmsService extends Service {
         ArrayList<String> bodyParts = smsManager.divideMessage(toSend.getBody());
         ArrayList<SMS> brokenSms = new ArrayList<>();
         for(String part: bodyParts) {
-            brokenSms.add(new SMS(toSend.getAddress(), toSend.getOriginatingAddress(), part));
+            SMS sms = toSend.clone();
+            sms.setBody(part);
+            brokenSms.add(sms);
         }
 
         ArrayList<PendingIntent> sentPIs = new ArrayList<>();
@@ -205,7 +212,7 @@ public class SmsService extends Service {
             Intent intent = new Intent(SENT);
             sentPIs.add(PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
 
-            registerReceiver(new SentReceiver(brokenSms.get(i)), new IntentFilter(SENT));
+            registerReceiver(new SentReceiver(request, brokenSms.get(i)), new IntentFilter(SENT));
         }
 
         ArrayList<PendingIntent> deliveryPIs = new ArrayList<>();

@@ -11,6 +11,8 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.MalformedJsonException;
 import com.notiflyapp.data.DataObject;
 import com.notiflyapp.data.DataObjectDeserializer;
+import com.notiflyapp.data.requestframework.Request;
+import com.notiflyapp.data.requestframework.RequestDeserializer;
 import com.notiflyapp.data.requestframework.Response;
 import com.notiflyapp.data.requestframework.ResponseDeserializer;
 
@@ -114,14 +116,18 @@ public class ClientLoop {
         //Log.v(TAG, str);
         GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(Response.class, new ResponseDeserializer());
+        gsonBuilder.registerTypeAdapter(Request.class, new RequestDeserializer());
         gsonBuilder.registerTypeAdapter(DataObject.class, new DataObjectDeserializer());
+        gsonBuilder.serializeNulls();
         Gson gson = gsonBuilder.create();
         DataObject obj = gson.fromJson(str, DataObject.class);
         client.receivedMsg(obj);
     }
 
     public void send(DataObject dataObject) {
-        Gson gson = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.serializeNulls();
+        Gson gson = gsonBuilder.create();
         String object = gson.toJson(dataObject);
         if(object != null) {
             Log.v(TAG, object);

@@ -36,6 +36,7 @@ public class ReceiveContactByThreadId extends Thread {
     public void run() {
         ConversationThread t = new ConversationThread();
         t.putBody(new ArrayList<Contact>());
+        t.putExtra(Integer.parseInt(response.getRequestValue()));
         Cursor cursorThread = null;
         Cursor cursorConversation = null;
         Cursor cursorContact = null;

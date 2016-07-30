@@ -77,6 +77,22 @@ public class SMS extends DataObject<String, File> {
 
     }
 
+    public SMS clone() {
+        SMS sms = new SMS();
+        sms.setId(id);
+        sms.setAddress(address);
+        sms.setOriginatingAddress(originatingAddress);
+        sms.setBody(body);
+        sms.setCreator(creator);
+        sms.setDate(date);
+        sms.setDateSent(dateSent);
+        sms.setPerson(person);
+        sms.setRead(read);
+        sms.setSubscriptionId(subscriptionId);
+        sms.setThreadId(threadId);
+        return sms;
+    }
+
     public int getId() {
         return id;
     }
