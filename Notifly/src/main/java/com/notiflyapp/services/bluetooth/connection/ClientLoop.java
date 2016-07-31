@@ -125,9 +125,7 @@ public class ClientLoop {
     }
 
     public void send(DataObject dataObject) {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.serializeNulls();
-        Gson gson = gsonBuilder.create();
+        Gson gson = new Gson();
         String object = gson.toJson(dataObject);
         if(object != null) {
             Log.v(TAG, object);
