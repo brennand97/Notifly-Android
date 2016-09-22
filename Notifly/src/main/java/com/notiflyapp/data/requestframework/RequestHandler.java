@@ -51,12 +51,18 @@ public class RequestHandler {
     public static RequestHandler getInstance(Context context) {
         if(handler == null) {
             handler = new RequestHandler(context);
+        } else {
+            handler.context = context;
         }
         return handler;
     }
 
     public void handleRequest(BluetoothClient client, Request request) {
-        Log.v(TAG, "Received request : " + request.getExtra().toString() + " from : " + client.getDeviceMac() + " for : " + request.getBody());
+        if(client != null) {
+            Log.v(TAG, "Received request : " + request.getExtra().toString() + " from : " + client.getDeviceMac() + " for : " + request.getBody());
+        } else {
+            Log.v(TAG, "Received request : " + request.getExtra().toString() + " for : " + request.getBody());
+        }
         clientHashMap.put(request.getExtra().toString(), client);
         Response response = Response.makeResponse(request);
         switch (request.getBody()) {
@@ -83,7 +89,6 @@ public class RequestHandler {
 
     public void handleResponse(Response response) {
         if(callbackHashMap.containsKey(response.getExtra().toString()) && requestHashMap.containsKey(response.getExtra().toString())) {
-            //TODO handle the incoming of a requested response
             String uuid = response.getExtra().toString();
             callbackHashMap.get(uuid).responseReceived(requestHashMap.get(uuid), response);
             callbackHashMap.remove(response.getExtra().toString());
@@ -97,14 +102,22 @@ public class RequestHandler {
     public void sendRequest(BluetoothClient client, Request request, ResponseCallback callback) {
         requestHashMap.put(request.getExtra().toString(), request);
         callbackHashMap.put(request.getExtra().toString(), callback);
-        client.sendMsg(request);
+        if(client != null) {
+            client.sendMsg(request);
+        } else {
+            this.handleRequest(null, request);
+        }
     }
 
     public void sendResponse(Response response) {
         String uuid = response.getExtra().toString();
         if(clientHashMap.containsKey(uuid)) {
             BluetoothClient client = clientHashMap.get(uuid);
-            client.sendMsg(response);
+            if(client != null) {
+                client.sendMsg(response);
+            }  else {
+                this.handleResponse(response);
+            }
             Log.v(TAG, "Response : " + response.getExtra().toString() + " sent");
             clientHashMap.remove(uuid);
         }

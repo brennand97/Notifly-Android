@@ -16,6 +16,7 @@ import com.notiflyapp.data.requestframework.RequestHandler.RequestCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Created by Brennan on 6/25/2016.
@@ -42,7 +43,8 @@ public class ReceiveContactByThreadId extends Thread {
         Cursor cursorContact = null;
 
         try {
-            cursorThread = context.getContentResolver().query(Uri.parse( "content://mms-sms/conversations?simple=true"), new String[] { Telephony.Threads.ARCHIVED, Telephony.Threads.DATE, Telephony.Threads.RECIPIENT_IDS },
+            cursorThread = context.getContentResolver().query(Uri.parse( "content://mms-sms/conversations?simple=true"),
+                    new String[] { Telephony.Threads.ARCHIVED, Telephony.Threads.DATE, Telephony.Threads.RECIPIENT_IDS },
                     Telephony.Threads._ID + " = ?", new String[]{ response.getRequestValue() }, null);
             String recipientString;
 
@@ -51,15 +53,11 @@ public class ReceiveContactByThreadId extends Thread {
                 return;
             }
 
-            int archived = cursorThread.getColumnIndex(Telephony.Threads.ARCHIVED);
-            int date = cursorThread.getColumnIndex(Telephony.Threads.DATE);
-            int recipientIdsX = cursorThread.getColumnIndex(Telephony.Threads.RECIPIENT_IDS);
-
             cursorThread.moveToFirst();
 
-            t.setArchived(cursorThread.getInt(archived) == 1);
-            t.setDate(cursorThread.getString(date));
-            recipientString = cursorThread.getString(recipientIdsX);
+            t.setArchived(cursorThread.getInt(cursorThread.getColumnIndex(Telephony.Threads.ARCHIVED)) == 1);
+            t.setDate(cursorThread.getString(cursorThread.getColumnIndex(Telephony.Threads.DATE)));
+            recipientString = cursorThread.getString(cursorThread.getColumnIndex(Telephony.Threads.RECIPIENT_IDS));
             String[] recipientIds = recipientString.split(" ");
 
             Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + recipientIds.length + " recipientIds: " + Arrays.toString(recipientIds));
@@ -70,18 +68,22 @@ public class ReceiveContactByThreadId extends Thread {
                 response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
                 return;
             }
+
             cursorConversation.moveToFirst();
-            String[] addresses = new String[cursorConversation.getCount()];
+            HashSet<String> addresses = new HashSet<>();
 
             int address = cursorConversation.getColumnIndex("address");
 
             for(int i = 0; i < cursorConversation.getCount(); i++) {
-                addresses[i] = formatPhoneNumber(cursorConversation.getString(address));
+                String a = cursorConversation.getString(address);
+                Log.v(TAG, a);
+                addresses.add(stripPhoneNumber(a));
+                cursorConversation.moveToNext();
             }
 
-            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + addresses.length + " addresses: " + Arrays.toString(addresses));
+            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + addresses.size() + " addresses: " + addresses);
 
-            cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, Phone.NUMBER + " = ?", addresses, null);
+            cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, null);
 
             if (cursorContact == null || cursorContact.getCount() == 0) {
                 for(String adr: addresses) {
@@ -94,6 +96,7 @@ public class ReceiveContactByThreadId extends Thread {
                 RequestHandler.getInstance(context).sendResponse(response);
                 return;
             }
+
             cursorContact.moveToFirst();
 
             int contactIdIdx = cursorContact.getColumnIndex(Phone._ID);
@@ -102,30 +105,34 @@ public class ReceiveContactByThreadId extends Thread {
             int photoIdIdx = cursorContact.getColumnIndex(Phone.PHOTO_ID);
 
             do {
-                Contact c = new Contact();
+                String contactNumber = cursorContact.getString(phoneNumberIdx);
+                if(addresses.contains(stripPhoneNumber(contactNumber))) {
+                    Contact c = new Contact();
 
-                c.putBody(cursorContact.getString(nameIdx));
-                c.putExtra(cursorContact.getString(phoneNumberIdx));
-                c.setContactId(cursorContact.getInt(contactIdIdx));
+                    c.putBody(cursorContact.getString(nameIdx));
+                    c.putExtra(contactNumber);
+                    c.setContactId(cursorContact.getInt(contactIdIdx));
 
-                t.addContact(c);
+                    t.addContact(c);
+                }
             } while (cursorContact.moveToNext());
 
-            if(t.getContacts().length < addresses.length) {
-                for(int i = 0; i < addresses.length; i++) {
+            if(t.getContacts().length < addresses.size()) {
+                for(String adr: addresses) {
                     for(int j = 0; j < t.getContacts().length; j++) {
-                        if(t.getContacts()[j].getExtra().equals(addresses[i])) {
+                        if(t.getContacts()[j].getExtra().equals(adr)) {
                             continue;
                         }
                     }
                     Contact c = new Contact();
-                    c.putExtra(addresses[i]);
+                    c.setContactId(-1);
+                    c.putExtra(adr);
 
                     t.addContact(c);
                 }
             }
 
-            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + cursorContact.getCount() + " contacts");
+            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + t.getContacts().length + " contacts: " + Arrays.toString(t.getContacts()));
 
         } catch (NullPointerException e) {
             e.printStackTrace();
@@ -145,11 +152,16 @@ public class ReceiveContactByThreadId extends Thread {
         RequestHandler.getInstance(context).sendResponse(response);
     }
 
-    private String formatPhoneNumber(String s) {
-        String raw = s.replace(" ", "").replace("(", "").replace(")", "").replace("+", "").replace("-", "");
+    private String stripPhoneNumber(String s) {
+        String raw =  s.replace(" ", "").replace("(", "").replace(")", "").replace("+", "").replace("-", "");
         if(raw.substring(0, 1).equals("1") && raw.length() == 11 && s.contains("+")) {
             raw = raw.substring(1);
         }
+        return raw;
+    }
+
+    private String formatPhoneNumber(String s) {
+        String raw = stripPhoneNumber(s);
         StringBuilder b = new StringBuilder();
         if(raw.length() == 10) {
             b.append("(");
@@ -171,4 +183,16 @@ public class ReceiveContactByThreadId extends Thread {
         return b.toString();
     }
 
+    private void displayAll() {
+        Cursor cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, null);
+        if(cursorContact == null || cursorContact.getCount() == 0) {
+            return;
+        }
+        cursorContact.moveToFirst();
+        int nameIdx = cursorContact.getColumnIndex(Phone.DISPLAY_NAME);
+        int phoneNumberIdx = cursorContact.getColumnIndex(Phone.NUMBER);
+        do {
+            Log.v(TAG, cursorContact.getString(nameIdx) + ", " + cursorContact.getString(phoneNumberIdx));
+        } while (cursorContact.moveToNext());
+    }
 }

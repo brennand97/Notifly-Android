@@ -44,4 +44,9 @@ public class Contact extends DataObject<String, String> {
     public void putExtra(String file) {
         this.extra = file;
     }
+
+    @Override
+    public String toString() {
+        return body + ", " + extra;
+    }
 }
