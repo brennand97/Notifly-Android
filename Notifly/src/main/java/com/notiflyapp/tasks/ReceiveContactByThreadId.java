@@ -50,6 +50,7 @@ public class ReceiveContactByThreadId extends Thread {
 
             if (cursorThread == null || cursorThread.getCount() == 0) {
                 response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
+                RequestHandler.getInstance(context).sendResponse(response);
                 return;
             }
 
@@ -66,6 +67,7 @@ public class ReceiveContactByThreadId extends Thread {
 
             if(cursorConversation == null || cursorConversation.getCount() == 0) {
                 response.putItem(RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD, null);
+                RequestHandler.getInstance(context).sendResponse(response);
                 return;
             }
 
@@ -126,7 +128,7 @@ public class ReceiveContactByThreadId extends Thread {
                     }
                     Contact c = new Contact();
                     c.setContactId(-1);
-                    c.putExtra(adr);
+                    c.putExtra(formatPhoneNumber(adr));
 
                     t.addContact(c);
                 }
