@@ -129,7 +129,7 @@ public class ReceiveContactByThreadId extends Thread {
                     Contact c = new Contact();
                     c.setContactId(-1);
                     c.putExtra(formatPhoneNumber(adr));
-
+                    //change
                     t.addContact(c);
                 }
             }
