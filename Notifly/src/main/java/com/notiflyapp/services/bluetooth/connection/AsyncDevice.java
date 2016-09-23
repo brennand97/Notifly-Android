@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016 Brennan Douglas
+ */
+
 package com.notiflyapp.services.bluetooth.connection;
 
 import android.os.AsyncTask;

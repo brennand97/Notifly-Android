@@ -1,3 +1,7 @@
+<!--
+  ~ Copyright (c) 2016 Brennan Douglas
+  -->
+
 <resources>
     <string name="app_name">Notifly</string>
     <string name="title_activity_fab">FAB</string>

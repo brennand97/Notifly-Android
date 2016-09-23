@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2016 Brennan Douglas
+ */
+
 package com.notiflyapp.ui.dialogs.bluetoothscan;
 
 import android.bluetooth.BluetoothDevice;
