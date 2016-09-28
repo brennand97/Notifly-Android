@@ -35,7 +35,7 @@ public abstract class OptionButton implements View.OnClickListener {
         this.activity = activity;
         deviceInfo = DeviceInfo.replicate(di);
         deviceInfoOld = di;
-        deviceDatabase = DatabaseFactory.getDeviceDatabase(activity);
+        deviceDatabase = DatabaseFactory.getDeviceDatabase(this.activity);
     }
 
     protected void updateDevice() {

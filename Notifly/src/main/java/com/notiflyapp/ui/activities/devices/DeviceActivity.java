@@ -17,6 +17,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -37,13 +39,15 @@ import com.notiflyapp.ui.dialogs.bluetoothscan.ConnectBluetoothDialogFragment;
 import com.notiflyapp.services.bluetooth.connection.BluetoothService;
 import com.notiflyapp.data.DeviceInfo;
 
+import java.util.ArrayList;
+
 public class DeviceActivity extends AppCompatActivity {
 
     private static final String TAG = DeviceActivity.class.getSimpleName();
 
-    ListView listView;
+    RecyclerView recyclerView;
+    DeviceActivityRecyclerViewAdapter listAdapter;
     FloatingActionButton floatingActionButton;
-    DeviceActivityListAdapter deviceActivityListAdapter;
     DeviceDatabase deviceDatabase;
 
     boolean smsActive = false;
@@ -82,10 +86,6 @@ public class DeviceActivity extends AppCompatActivity {
             }
         }
 
-        deviceDatabase = DatabaseFactory.getDeviceDatabase(this);
-
-        listView = (ListView) findViewById(R.id.list_view);
-
         floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,14 +110,17 @@ public class DeviceActivity extends AppCompatActivity {
             }
         });
 
-        deviceActivityListAdapter = new DeviceActivityListAdapter(this, new DeviceInfo[0]);
-        listView.setAdapter(deviceActivityListAdapter);
+        deviceDatabase = DatabaseFactory.getDeviceDatabase(this);
 
-        DeviceSwipeTouchListener deviceSwipeTouchListener = new DeviceSwipeTouchListener(listView,
-                new DeviceSwipeCallback());
+        recyclerView = (RecyclerView) findViewById(R.id.device_activity_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this.getApplicationContext()));
+        listAdapter = new DeviceActivityRecyclerViewAdapter(this, new ArrayList<DeviceInfo>());
+        recyclerView.setAdapter(listAdapter);
 
-        listView.setOnTouchListener(deviceSwipeTouchListener);
-        listView.setOnScrollListener(deviceSwipeTouchListener.makeScrollListener());
+        //DeviceSwipeTouchListener deviceSwipeTouchListener = new DeviceSwipeTouchListener(recyclerView, new DeviceSwipeCallback());
+
+        //recyclerView.setOnTouchListener(deviceSwipeTouchListener);
+        //recyclerView.setOnScrollListener(deviceSwipeTouchListener.makeScrollListener());
 
         startSmsService();
 
@@ -155,8 +158,8 @@ public class DeviceActivity extends AppCompatActivity {
                         Intent intent = new Intent(DeviceActivity.this, BluetoothService.class);
                         intent.setAction(BluetoothService.CLOSE_ALL_DEVICES);
                         startService(intent);
-                        deviceActivityListAdapter.clear();
-                        deviceActivityListAdapter.notifyDataSetChanged();
+                        listAdapter.clear();
+                        listAdapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -308,18 +311,15 @@ public class DeviceActivity extends AppCompatActivity {
             e.printStackTrace();
             return;
         }
-        if(!deviceActivityListAdapter.containsMac(device)) {
-            deviceActivityListAdapter.add(device);
+        if(!listAdapter.containsMac(device)) {
+            listAdapter.add(device);
         } else {
-            int position = deviceActivityListAdapter.indexOfMac(device);
-            deviceActivityListAdapter.remove(position);
-            listView.deferNotifyDataSetChanged();
-            deviceActivityListAdapter.add(position, device);
-            deviceActivityListAdapter.notifyDataSetChanged();
-            listView.smoothScrollToPosition(position);
+            int position = listAdapter.indexOfMac(device);
+            listAdapter.remove(position);
+            listAdapter.add(position, device);
+            listAdapter.notifyDataSetChanged();
+            recyclerView.smoothScrollToPosition(position);
         }
-        listView.deferNotifyDataSetChanged();
-        deviceActivityListAdapter.notifyDataSetChanged();
     }
 
 }

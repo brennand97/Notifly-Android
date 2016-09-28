@@ -6,6 +6,7 @@ package com.notiflyapp.ui.activities.devices.buttons;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.Toast;
 
@@ -29,7 +30,8 @@ public class SMSListener extends OptionButton {
             //TODO update UI from not connected to connected
             deviceInfo.setOptionSMS(true);
         }
-        Toast.makeText(activity, deviceInfo.getDeviceName() + " SMS are " + (deviceInfo.getOptionSMS() ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
+        Snackbar.make(v, deviceInfo.getDeviceName() + " SMS are " + (deviceInfo.getOptionSMS() ? "enabled" : "disabled"), Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+        //Toast.makeText(activity, deviceInfo.getDeviceName() + " SMS are " + (deviceInfo.getOptionSMS() ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
         updateDevice();
     }
 }

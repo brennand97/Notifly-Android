@@ -40,7 +40,7 @@ public class DrmConvertSession {
     /**
      * Start of converting a file.
      *
-     * @param context The context of the application running the convert session.
+     * @param context The activity of the application running the convert session.
      * @param mimeType Mimetype of content that shall be converted.
      * @return A convert session or null in case an error occurs.
      */
@@ -60,7 +60,7 @@ public class DrmConvertSession {
                 }
             } catch (IllegalArgumentException e) {
                 Log.w(TAG,
-                        "DrmManagerClient instance could not be created, context is Illegal.");
+                        "DrmManagerClient instance could not be created, activity is Illegal.");
             } catch (IllegalStateException e) {
                 Log.w(TAG, "DrmManagerClient didn't initialize properly.");
             }

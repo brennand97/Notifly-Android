@@ -128,7 +128,7 @@ public class PduComposer {
     /**
      * Constructor.
      *
-     * @param context the context
+     * @param context the activity
      * @param pdu the pdu to be composed
      */
     public PduComposer(Context context, GenericPdu pdu) {

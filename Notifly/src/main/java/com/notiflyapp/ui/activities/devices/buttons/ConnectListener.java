@@ -5,6 +5,8 @@
 package com.notiflyapp.ui.activities.devices.buttons;
 
 import android.app.Activity;
+import android.content.Context;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.Toast;
 
@@ -28,7 +30,8 @@ public class ConnectListener extends OptionButton  {
             //TODO update UI from not connected to connected
             deviceInfo.setOptionConnect(true);
         }
-        Toast.makeText(activity, deviceInfo.getDeviceName() + " connection is " + (deviceInfo.getOptionConnect() ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
+        Snackbar.make(v, deviceInfo.getDeviceName() + " connection is " + (deviceInfo.getOptionConnect() ? "enabled" : "disabled"), Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+        //Toast.makeText(activity, deviceInfo.getDeviceName() + " connection is " + (deviceInfo.getOptionConnect() ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
         updateDevice();
     }
 }

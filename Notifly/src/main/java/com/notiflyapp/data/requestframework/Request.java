@@ -6,7 +6,6 @@ package com.notiflyapp.data.requestframework;
 
 import com.notiflyapp.data.DataObject;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;
 

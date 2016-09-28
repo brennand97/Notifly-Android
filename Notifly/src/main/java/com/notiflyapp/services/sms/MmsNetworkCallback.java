@@ -46,10 +46,10 @@ public class MmsNetworkCallback extends ConnectivityManager.NetworkCallback {
         NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
         Log.i("Debug", "Callback called");
 
-        //TransactionSettings transactionSettings = new TransactionSettings(context, networkInfo.getExtraInfo());
+        //TransactionSettings transactionSettings = new TransactionSettings(activity, networkInfo.getExtraInfo());
         /*
         try {
-            byte[] rawPdu = HttpUtils.httpConnection(context, 0, url, null, HttpUtils.HTTP_GET_METHOD, false, null, -1);
+            byte[] rawPdu = HttpUtils.httpConnection(activity, 0, url, null, HttpUtils.HTTP_GET_METHOD, false, null, -1);
             Log.i("Debug", new String(rawPdu));
         } catch (IOException e) {
             e.printStackTrace();

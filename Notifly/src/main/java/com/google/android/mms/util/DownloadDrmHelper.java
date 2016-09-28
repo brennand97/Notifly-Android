@@ -49,7 +49,7 @@ public class DownloadDrmHelper {
                 }
             } catch (IllegalArgumentException e) {
                 Log.w(TAG,
-                        "DrmManagerClient instance could not be created, context is Illegal.");
+                        "DrmManagerClient instance could not be created, activity is Illegal.");
             } catch (IllegalStateException e) {
                 Log.w(TAG, "DrmManagerClient didn't initialize properly.");
             }
@@ -86,7 +86,7 @@ public class DownloadDrmHelper {
     /**
      * Gets the original mime type of DRM protected content.
      *
-     * @param context The context
+     * @param context The activity
      * @param path Path to the file
      * @param containingMime The current mime type of of the file i.e. the
      *            containing mime type
