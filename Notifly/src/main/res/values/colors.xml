@@ -14,4 +14,6 @@
     <color name="doubleDarkRed">#780000</color>
     <color name="lightRed">#FF8080</color>
     <color name="orange">#FFA200</color>
+
+    <color name="darkBackground">#8E8E8E</color>
 </resources>
