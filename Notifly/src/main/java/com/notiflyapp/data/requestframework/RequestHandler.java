@@ -8,12 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.notiflyapp.data.ConversationThread;
-import com.notiflyapp.data.SMS;
 import com.notiflyapp.data.Serial;
 import com.notiflyapp.services.sms.SmsService;
 import com.notiflyapp.tasks.ReceiveContactByThreadId;
 import com.notiflyapp.services.bluetooth.connection.BluetoothClient;
+import com.notiflyapp.tasks.RetrievePreviousSms;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,6 +34,10 @@ public class RequestHandler {
             public final static String CONFIRMATION_SEND_SMS_SENT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_SENT";
             public final static String CONFIRMATION_SEND_SMS_FAILED = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_FAILED";
 
+        public final static String RETRIEVE_PREVIOUS_SMS = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.RETRIEVE_PREVIOUS_SMS";
+            public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME";
+            public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT";
+            public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_ARRAY = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_ARRAY";
     }
 
     private HashMap<String, Request> requestHashMap = new HashMap<>();              //String is the UUID of the request in string form and the Request object is the request itself
@@ -76,7 +79,7 @@ public class RequestHandler {
                 break;
             case RequestCode.SEND_SMS:
                 try {
-                    Log.v(TAG, "Received send sms request");
+                    Log.v(TAG, "Received SMS to send");
                     Intent smsIntent = new Intent(context, SmsService.class);
                     smsIntent.setAction(SmsService.ACTION_SEND_SMS);
                     smsIntent.putExtra(SmsService.EXTRA_REQUEST, Serial.serialize(request));
@@ -85,6 +88,22 @@ public class RequestHandler {
                     e.printStackTrace();
                 }
                 break;
+            case RequestCode.RETRIEVE_PREVIOUS_SMS:
+                Log.v(TAG,"Retrieving previous SMS");
+                String startTime = (String) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME);
+                String messageCount = (String) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT);
+                if(startTime == null || messageCount == null) {
+                    RequestHandler.getInstance(context).sendResponse(response);
+                }
+                try {
+                    long startTimeLong = Long.parseLong(startTime);
+                    int messageCountInt = Integer.parseInt(messageCount);
+                    RetrievePreviousSms retrievePreviousSmsTask = new RetrievePreviousSms(context, response, startTimeLong, messageCountInt);
+                    retrievePreviousSmsTask.start();
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    RequestHandler.getInstance(context).sendResponse(response);
+                }
             default:
                 //TODO handle if the given key does not match any of the defined request codes
                 break;

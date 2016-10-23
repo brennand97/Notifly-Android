@@ -74,7 +74,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
         Cursor cursor = getMessageCursor(message, resolver);
         if (cursor == null) {
-            Log.v(TAG, "message : " + message);
+            //Log.v(TAG, "message : " + message);
             count++;
             if(count >= 3) {
                 Log.v(TAG, "Cursor failed to load 3 times, aborting");

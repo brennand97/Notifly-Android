@@ -62,7 +62,7 @@ public class SMS extends DataObject<String, File> {
      */
     @Override
     public void putBody(String body) {
-
+        this.body = body;
     }
 
     /**
