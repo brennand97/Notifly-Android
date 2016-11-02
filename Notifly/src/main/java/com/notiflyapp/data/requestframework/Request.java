@@ -33,7 +33,7 @@ public class Request extends DataObject<String, UUID> {
      * @param key string associated with the request's key (body variable)
      * @return a general object that is defined by extra key
      */
-    public Object getItem(String key) {
+    public DataObject getItem(String key) {
         return hashMap.get(key);
     }
 

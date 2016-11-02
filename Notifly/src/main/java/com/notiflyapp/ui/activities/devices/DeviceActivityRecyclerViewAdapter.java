@@ -48,6 +48,7 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
 
     private ArrayList<DeviceInfo> devices;
     private Activity activity;
+    private DeviceInfo currentConnected = null;
 
     public DeviceActivityRecyclerViewAdapter(Activity activity, ArrayList<DeviceInfo> deviceInfoArrayList) {
         this.activity = activity;
@@ -69,6 +70,12 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
 
         holder.connectBtn.setOnClickListener(new ConnectListener(activity, deviceInfo));
         holder.smsBtn.setOnClickListener(new SMSListener(activity, deviceInfo));
+
+        if(currentConnected != null && deviceInfo.getDeviceMac().equals(currentConnected.getDeviceMac())) {
+            holder.cardView.setBackgroundColor(activity.getResources().getColor(R.color.cardViewConnected));
+        } else {
+            holder.cardView.setBackgroundColor(activity.getResources().getColor(R.color.cardView));
+        }
     }
 
     @Override
@@ -122,7 +129,7 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
         return array;
     }
 
-    public int indexOfMac(DeviceInfo device) {
+    public int indexByMac(DeviceInfo device) {
         for(DeviceInfo di: devices) {
             if(device.getDeviceMac().equals(di.getDeviceMac())) {
                 return devices.indexOf(di);
@@ -131,13 +138,21 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
         return -1;
     }
 
-    public boolean containsMac(DeviceInfo device) {
+    public boolean containsByMac(DeviceInfo device) {
         for(DeviceInfo di: devices) {
             if(device.getDeviceMac().equals(di.getDeviceMac())) {
                 return true;
             }
         }
         return false;
+    }
+
+    public DeviceInfo getCurrentConnected() {
+        return currentConnected;
+    }
+
+    public void setCurrentConnected(DeviceInfo currentConnected) {
+        this.currentConnected = currentConnected;
     }
 
 }

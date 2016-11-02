@@ -103,7 +103,7 @@ class DeviceActivityListAdapter extends BaseAdapter {
 
     }
 
-    public int indexOfMac(DeviceInfo device) {
+    public int indexByMac(DeviceInfo device) {
         for(DeviceInfo di: devices) {
             if(device.getDeviceMac().equals(di.getDeviceMac())) {
                 return devices.indexOf(di);
@@ -112,7 +112,7 @@ class DeviceActivityListAdapter extends BaseAdapter {
         return -1;
     }
 
-    public boolean containsMac(DeviceInfo device) {
+    public boolean containsByMac(DeviceInfo device) {
         for(DeviceInfo di: devices) {
             if(device.getDeviceMac().equals(di.getDeviceMac())) {
                 return true;

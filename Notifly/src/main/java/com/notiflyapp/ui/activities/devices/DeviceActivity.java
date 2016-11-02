@@ -7,7 +7,10 @@ package com.notiflyapp.ui.activities.devices;
 import android.Manifest;
 import android.app.DialogFragment;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,7 +29,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.notiflyapp.R;
@@ -53,6 +56,8 @@ public class DeviceActivity extends AppCompatActivity {
     boolean smsActive = false;
     boolean bluetoothActive = false;
 
+    private BroadcastReceiver bluetoothMessageReceiver;
+
     public static final int ADD_DEVICE = 0;
     public final Handler mainHandler = new Handler() {
         @Override
@@ -75,6 +80,35 @@ public class DeviceActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        bluetoothMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                int devicePosition;
+                switch (intent.getAction()) {
+                    case BluetoothService.DEVICE_CONNECTED:
+                        devicePosition = intent.getIntExtra(BluetoothService.DEVICE_DATABASE_POSITION, -1);
+                        Log.v(TAG, "Received device connect in UI.");
+
+                        try {
+                            DeviceInfo deviceInfo = deviceDatabase.getDeviceInfo(devicePosition);
+                            listAdapter.setCurrentConnected(deviceInfo);
+                            listAdapter.notifyDataSetChanged();
+                        } catch (DeviceNotFoundException | NullCursorException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case BluetoothService.DEVICE_DISCONNECTED:
+                        devicePosition = intent.getIntExtra(BluetoothService.DEVICE_DATABASE_POSITION, -1);
+                        Log.v(TAG, "Received device disconnect in UI.");
+
+                        listAdapter.setCurrentConnected(null);
+                        listAdapter.notifyDataSetChanged();
+                        break;
+                }
+
+            }
+        };
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(mBluetoothAdapter != null) {
@@ -156,7 +190,7 @@ public class DeviceActivity extends AppCompatActivity {
                     public void onPositive() {
                         deviceDatabase.clearDatabase();
                         Intent intent = new Intent(DeviceActivity.this, BluetoothService.class);
-                        intent.setAction(BluetoothService.CLOSE_ALL_DEVICES);
+                        intent.setAction(BluetoothService.DISCONNECT_DEVICE);
                         startService(intent);
                         listAdapter.clear();
                         listAdapter.notifyDataSetChanged();
@@ -186,6 +220,18 @@ public class DeviceActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver((bluetoothMessageReceiver),
+                new IntentFilter(BluetoothService.DEVICE_CONNECTED)
+        );
+        LocalBroadcastManager.getInstance(this).registerReceiver((bluetoothMessageReceiver),
+                new IntentFilter(BluetoothService.DEVICE_DISCONNECTED)
+        );
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
     }
@@ -198,6 +244,8 @@ public class DeviceActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(bluetoothMessageReceiver);
     }
 
     private void startSmsService() {
@@ -311,10 +359,10 @@ public class DeviceActivity extends AppCompatActivity {
             e.printStackTrace();
             return;
         }
-        if(!listAdapter.containsMac(device)) {
+        if(!listAdapter.containsByMac(device)) {
             listAdapter.add(device);
         } else {
-            int position = listAdapter.indexOfMac(device);
+            int position = listAdapter.indexByMac(device);
             listAdapter.remove(position);
             listAdapter.add(position, device);
             listAdapter.notifyDataSetChanged();

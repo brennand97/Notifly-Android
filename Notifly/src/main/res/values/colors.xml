@@ -16,4 +16,7 @@
     <color name="orange">#FFA200</color>
 
     <color name="darkBackground">#8E8E8E</color>
+
+    <color name="cardViewConnected">#e6ffe6</color>
+    <color name="cardView">#FFFFFF</color>
 </resources>

@@ -4,6 +4,8 @@
 
 package com.notiflyapp.data.requestframework;
 
+import android.provider.ContactsContract;
+
 import com.notiflyapp.data.DataObject;
 
 import java.util.HashMap;
@@ -40,7 +42,7 @@ public class Response extends DataObject<String , UUID> {
      * @param key string associated with the request's key (body variable)
      * @return a general object that is defined by extra key
      */
-    public Object getItem(String key) {
+    public DataObject getItem(String key) {
         return hashMap.get(key);
     }
 

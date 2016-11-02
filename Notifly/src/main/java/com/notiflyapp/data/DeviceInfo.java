@@ -17,7 +17,9 @@ public class DeviceInfo extends DataObject<String, File> {
 
     private String deviceName, deviceMac;   //Holds the information as it is sent to the other device
     private int deviceType;
-    private boolean connect, sms, notification;
+    private boolean connect;
+    private boolean sms;
+    private boolean notification;
 
     /**
      * Initializes a new DeviceInfo DataObject to be written to and sent to another device
@@ -134,5 +136,6 @@ public class DeviceInfo extends DataObject<String, File> {
 
     public boolean getOptionNotification() { return notification; }
     public DeviceInfo setOptionNotification(boolean notification) { this.notification = notification; return this; }
+
 
 }

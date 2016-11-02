@@ -97,6 +97,22 @@ public class SMS extends DataObject<String, File> {
         return sms;
     }
 
+    @Override
+    public String toString() {
+        return "SMS{" +
+                "id=" + id +
+                ", address='" + address + '\'' +
+                ", originatingAddress='" + originatingAddress + '\'' +
+                ", creator='" + creator + '\'' +
+                ", date=" + date +
+                ", dateSent=" + dateSent +
+                ", person='" + person + '\'' +
+                ", read=" + read +
+                ", subscriptionId=" + subscriptionId +
+                ", threadId=" + threadId +
+                '}';
+    }
+
     public int getId() {
         return id;
     }

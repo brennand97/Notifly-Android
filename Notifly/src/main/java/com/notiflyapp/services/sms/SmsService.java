@@ -198,6 +198,7 @@ public class SmsService extends Service {
 
     private void sendSMS(Request request) {
 
+        Log.v(TAG, request.getItem(RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT).toString());
         SMS toSend = (SMS) request.getItem(RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT);
 
         String SENT = "sent";

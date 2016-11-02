@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.notiflyapp.data.DataString;
 import com.notiflyapp.data.Serial;
 import com.notiflyapp.services.sms.SmsService;
 import com.notiflyapp.tasks.ReceiveContactByThreadId;
@@ -37,7 +38,7 @@ public class RequestHandler {
         public final static String RETRIEVE_PREVIOUS_SMS = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.RETRIEVE_PREVIOUS_SMS";
             public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME";
             public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT";
-            public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_ARRAY = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_ARRAY";
+            public final static String EXTRA_RETRIEVE_PREVIOUS_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_THREAD_ID";
     }
 
     private HashMap<String, Request> requestHashMap = new HashMap<>();              //String is the UUID of the request in string form and the Request object is the request itself
@@ -89,16 +90,19 @@ public class RequestHandler {
                 }
                 break;
             case RequestCode.RETRIEVE_PREVIOUS_SMS:
-                Log.v(TAG,"Retrieving previous SMS");
-                String startTime = (String) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME);
-                String messageCount = (String) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT);
-                if(startTime == null || messageCount == null) {
+                String startTime = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME)).getBody();
+                String messageCount = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT)).getBody();
+                String threadId = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_THREAD_ID)).getBody();
+                Log.v(TAG, startTime);
+                Log.v(TAG, messageCount);
+                Log.v(TAG, threadId);
+                if(startTime == null || messageCount == null || threadId == null) {
                     RequestHandler.getInstance(context).sendResponse(response);
                 }
                 try {
                     long startTimeLong = Long.parseLong(startTime);
                     int messageCountInt = Integer.parseInt(messageCount);
-                    RetrievePreviousSms retrievePreviousSmsTask = new RetrievePreviousSms(context, response, startTimeLong, messageCountInt);
+                    RetrievePreviousSms retrievePreviousSmsTask = new RetrievePreviousSms(context, response, startTimeLong, messageCountInt, threadId);
                     retrievePreviousSmsTask.start();
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
