@@ -26,9 +26,11 @@ public class AsyncDevice extends AsyncTask<BluetoothClient, BluetoothClient, Blu
     protected void onPostExecute(BluetoothClient s) {
         super.onPostExecute(s);
 
+        /*
         Message msg = ((Handler) BluetoothService.mServiceHandler).obtainMessage();
         msg.what = BluetoothService.CLIENT_DISCONNECTED;
         msg.obj = s;
         msg.sendToTarget();
+        */
     }
 }

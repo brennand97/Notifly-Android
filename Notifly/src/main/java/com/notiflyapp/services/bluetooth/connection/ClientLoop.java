@@ -69,7 +69,7 @@ public class ClientLoop {
 
         while (connected) {
             try {
-                if(mmSocket.isConnected() && mmInStream != null) {
+                if(mmInStream != null && mmSocket != null && mmSocket.isConnected()) {
                     byte[] header = new byte[4];
                     int headerValue;
                     int bytes;
@@ -86,7 +86,8 @@ public class ClientLoop {
                     //Crucial for successful packet retrieval
                     while(bytes < headerValue) {
                         byte[] newBuffer = new byte[headerValue - bytes];
-                        bytes += mmInStream.read(newBuffer);
+                        int tmpBytes = mmInStream.read(newBuffer);
+                        bytes += tmpBytes;
                         for(int i = 0; i < newBuffer.length; i++) {
                             buffer[headerValue - newBuffer.length + i] = newBuffer[i];
                         }
@@ -101,7 +102,8 @@ public class ClientLoop {
                     dataIn(buffer);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.i("Bluetooth Client", "Disconnected");
+                client.handleDisconnect();
                 break;
             }
         }
@@ -132,7 +134,6 @@ public class ClientLoop {
         Gson gson = new Gson();
         String object = gson.toJson(dataObject);
         if(object != null) {
-            Log.v(TAG, object);
             handler.add(object);
         }
     }
@@ -206,7 +207,6 @@ public class ClientLoop {
                                 try {
                                     mmOutStream.write(createHeader(object.getBytes().length));
                                     mmOutStream.write(object.getBytes());
-                                    Log.v(ClientLoop.TAG, "bytes out : " + String.valueOf(object.getBytes().length));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }

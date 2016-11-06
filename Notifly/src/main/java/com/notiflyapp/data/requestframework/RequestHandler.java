@@ -27,6 +27,8 @@ public class RequestHandler {
 
     public final static class RequestCode {
 
+        public final static String EXTRA_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA__THREAD_ID";
+
         public final static String CONTACT_BY_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONTACT_BY_THREAD_ID";
             public final static String EXTRA_CONTACT_BY_THREAD_ID_THREAD = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD";
 
@@ -38,7 +40,10 @@ public class RequestHandler {
         public final static String RETRIEVE_PREVIOUS_SMS = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.RETRIEVE_PREVIOUS_SMS";
             public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME";
             public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT";
-            public final static String EXTRA_RETRIEVE_PREVIOUS_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_THREAD_ID";
+            //EXTRA_THREAD_ID
+
+        public final static String PUSH_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.PUSH_THREAD_ID";
+            //EXTRA_THREAD_ID
     }
 
     private HashMap<String, Request> requestHashMap = new HashMap<>();              //String is the UUID of the request in string form and the Request object is the request itself
@@ -92,10 +97,7 @@ public class RequestHandler {
             case RequestCode.RETRIEVE_PREVIOUS_SMS:
                 String startTime = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME)).getBody();
                 String messageCount = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT)).getBody();
-                String threadId = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_THREAD_ID)).getBody();
-                Log.v(TAG, startTime);
-                Log.v(TAG, messageCount);
-                Log.v(TAG, threadId);
+                String threadId = ((DataString) request.getItem(RequestCode.EXTRA_THREAD_ID)).getBody();
                 if(startTime == null || messageCount == null || threadId == null) {
                     RequestHandler.getInstance(context).sendResponse(response);
                 }

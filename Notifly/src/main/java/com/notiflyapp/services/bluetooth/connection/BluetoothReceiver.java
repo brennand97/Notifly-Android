@@ -28,7 +28,7 @@ public class BluetoothReceiver extends BroadcastReceiver {
                         int extra = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
                         switch (extra) {
                             case BluetoothAdapter.STATE_ON:
-                                bluetoothService.setAction(BluetoothService.CONNECT_ALL_DEVICES);
+                                bluetoothService.setAction(BluetoothService.CONNECT_LAST_DEVICE);
                                 context.startService(bluetoothService);
                                 Log.i(this.toString(), "Bluetooth turned on, connecting devices");
                                 break;

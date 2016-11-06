@@ -23,6 +23,7 @@ import com.notiflyapp.database.NullMacAddressException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -62,7 +63,7 @@ public class BluetoothClient {
 
     /**
      *
-     * @param macAddress    BluetoothDevice Mac Address that is being connected
+     * @param device    BluetoothDevice Mac Address that is being connected
      * @param conn      The uninitialized connection received by the service
      */
     public BluetoothClient(Context context, BluetoothSocket conn, BluetoothDevice device, DeviceInfo di) {
@@ -86,6 +87,7 @@ public class BluetoothClient {
     void close() {
         loop.close();     //Called receiving threads close() method to disconnect it from device
         serverOut("Client disconnected.");
+
     }
 
 
@@ -175,7 +177,7 @@ public class BluetoothClient {
      * @param out String to print to log
      */
     protected void serverOut(String out) {
-        Log.i("Debug", out);
+        Log.i("BluetoothClient-Debug", out);
     }
 
 

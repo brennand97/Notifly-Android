@@ -14,6 +14,7 @@ import android.provider.Telephony;
 import android.util.Log;
 
 import com.notiflyapp.data.Contact;
+import com.notiflyapp.data.DataObject;
 import com.notiflyapp.data.DataString;
 import com.notiflyapp.data.SMS;
 import com.notiflyapp.data.requestframework.RequestHandler;
@@ -54,7 +55,7 @@ public class RetrievePreviousSms extends Thread {
 
         try {
             cursorThread = context.getContentResolver().query(Telephony.Sms.CONTENT_URI,
-                    null, Telephony.Sms._ID + " = ? AND " + Telephony.Sms.DATE + " < ?", new String[]{ threadId, String.valueOf(startTime) }, null);
+                    null, Telephony.Sms.THREAD_ID + " = ? AND " + Telephony.Sms.DATE + " < ?", new String[]{ threadId, String.valueOf(startTime) }, null);
 
             if(cursorThread == null) {
                 Log.v(TAG, "cursor null");
@@ -66,15 +67,20 @@ public class RetrievePreviousSms extends Thread {
                 return;
             }
 
+            Log.i(TAG, cursorThread.getCount() + " messages found for thread id " + threadId);
             cursorThread.moveToFirst();
-
+            DataObject[] messages = new DataObject[messageCount];
             for(int i = 0; i < messageCount; i++) {
-                sendResponse(cursorThread);
+                messages[i] = MessageHandler.getSms(cursorThread);
                 if(cursorThread.isLast()) {
                     break;
                 } else {
                     cursorThread.moveToNext();
                 }
+            }
+
+            for(int i = messages.length - 1; i >= 0; i--) {
+                sendResponse((SMS) messages[i]);
             }
 
         } catch (NullPointerException e) {
@@ -89,9 +95,7 @@ public class RetrievePreviousSms extends Thread {
         }
     }
 
-    private void sendResponse(Cursor cursor) {
-        SMS sms = MessageHandler.getSms(cursor);
-
+    private void sendResponse(SMS sms) {
         Intent received = new Intent(context, SmsService.class);
         received.setAction(SmsService.ACTION_RECEIVE_SMS);
         try {

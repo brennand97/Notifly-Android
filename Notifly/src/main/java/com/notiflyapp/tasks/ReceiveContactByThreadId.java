@@ -89,7 +89,8 @@ public class ReceiveContactByThreadId extends Thread {
 
             Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + addresses.size() + " addresses: " + addresses);
 
-            cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, null);
+            //Sorted in descending order so the most recent contacts are used
+            cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, Phone._ID + " DESC");
 
             if (cursorContact == null || cursorContact.getCount() == 0) {
                 for(String adr: addresses) {
@@ -120,6 +121,9 @@ public class ReceiveContactByThreadId extends Thread {
                     c.setContactId(cursorContact.getInt(contactIdIdx));
 
                     t.addContact(c);
+
+                    //Remove address so duplicate contact is not added
+                    addresses.remove(stripPhoneNumber(contactNumber));
                 }
             } while (cursorContact.moveToNext());
 

@@ -32,10 +32,9 @@ import com.notiflyapp.database.DeviceNotFoundException;
 import com.notiflyapp.database.NullCursorException;
 import com.notiflyapp.database.NullMacAddressException;
 import com.notiflyapp.services.sms.SmsService;
-import com.notiflyapp.ui.activities.devices.DeviceActivity;
+import com.notiflyapp.tools.CompletionCallback;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.UUID;
 
 /**
@@ -50,7 +49,7 @@ public class BluetoothService extends Service {
     public final static String MAC_ADDRESS = "macAddress";
 
     public final static String CONNECT_TO_DEVICE = "com.notiflyapp.services.bluetooth.connection.BluetoothService.connection.CONNECT_TO_DEVICE";
-    public final static String CONNECT_ALL_DEVICES = "com.notiflyapp.services.bluetooth.connection.BluetoothService.connection.CONNECT_ALL_DEVICES";
+    public final static String CONNECT_LAST_DEVICE = "com.notiflyapp.services.bluetooth.connection.BluetoothService.connection.CONNECT_LAST_DEVICE";
     public static final String DISCONNECT_DEVICE = "com.notiflyapp.services.bluetooth.connection.BluetoothService.connection.DISCONNECT_DEVICE";
     public static final String UPDATE_DEVICE = "com.notiflyapp.services.bluetooth.connection.BluetoothService.connection.UPDATE_DEVICE";
 
@@ -88,6 +87,7 @@ public class BluetoothService extends Service {
                     Runnable runnable = new Runnable() {
                         @Override
                         public void run() {
+
                             DeviceInfo deviceInfo;
                             try {
                                 deviceInfo = deviceDatabase.getDeviceInfo(macAddress);
@@ -97,7 +97,11 @@ public class BluetoothService extends Service {
                             }
 
                             if(connectedClient != null) {
-                                disconnectClient(connectedClient);
+                                if(!connectedClient.getDeviceMac().equals(deviceInfo.getDeviceMac())) {
+                                    disconnectClient(connectedClient);
+                                } else {
+                                    return;
+                                }
                             }
 
                             BluetoothDevice bluetoothDevice = mBluetoothAdapter.getRemoteDevice(macAddress);
@@ -176,10 +180,6 @@ public class BluetoothService extends Service {
                     }
 
                     break;
-                case CLIENT_DISCONNECTED:
-                    BluetoothClient client = ((BluetoothClient) msg.obj);
-                    disconnectClient(client);
-                    break;
             }
 
         }
@@ -214,24 +214,28 @@ public class BluetoothService extends Service {
         if(intent != null) {
             action = intent.getAction();
         } else {
-            connectAllDBDevices();
+            connectLastDevice();
         }
         if(action != null) {
             switch (action) {
                 case SmsService.ACTION_RECEIVE_SMS:
-                    if (intent.hasExtra(SmsService.EXTRA_SMS_MESSAGE)) {
-                        try {
-                            sendSms((SMS) Serial.deserialize(intent.getByteArrayExtra(SmsService.EXTRA_SMS_MESSAGE)));
-                        } catch (IOException | ClassNotFoundException e) {
-                            e.printStackTrace();
+                    try {
+                        SMS sms = (SMS) Serial.deserialize(intent.getByteArrayExtra(SmsService.EXTRA_SMS_MESSAGE));
+                        if (intent.hasExtra(SmsService.EXTRA_SMS_MESSAGE)) {
+                            sendSms(sms);
                         }
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
                     break;
                 case SmsService.ACTION_RECEIVE_MMS:
                     //TODO
                     break;
-                case CONNECT_ALL_DEVICES:
-                    connectAllDBDevices();
+                case SmsService.ACTION_MESSAGE_AVAILABLE:
+
+                    break;
+                case CONNECT_LAST_DEVICE:
+                    connectLastDevice();
                     Log.i(this.toString(), "Connected all devices");
                     break;
                 case DISCONNECT_DEVICE:
@@ -306,7 +310,7 @@ public class BluetoothService extends Service {
                     }
                     break;
                 default:
-                    connectAllDBDevices();
+                    connectLastDevice();
                     break;
             }
         }
@@ -320,7 +324,7 @@ public class BluetoothService extends Service {
         if(connectedClient != null) {
             try {
                 DeviceInfo di = deviceDatabase.getDeviceInfo(connectedClient.getDeviceMac());
-                if(di.getOptionConnect()) {
+                if(di.getOptionSMS()) {
                     connectedClient.sendMsg(sms);
                 }
             } catch (DeviceNotFoundException | NullCursorException e) {
@@ -362,7 +366,7 @@ public class BluetoothService extends Service {
         mServiceHandler.sendMessage(msg);
     }
 
-    private void connectAllDBDevices() {
+    private void connectLastDevice() {
         //Start all devices that should be connected if in range from the database
         DeviceInfo[] infos;
         try {
@@ -371,11 +375,7 @@ public class BluetoothService extends Service {
             e.printStackTrace();
             return;
         }
-        for(DeviceInfo info: infos) {
-            if(info.getOptionConnect()) {
-                startBluetoothDevice(info.getDeviceMac());
-            }
-        }
+        startBluetoothDevice(infos[0].getDeviceMac());
     }
 
     public void disconnectClient(BluetoothClient client) {

@@ -90,7 +90,7 @@ public class SmsService extends Service {
                     case ACTION_RECEIVE_SMS:
                         try {
                             forwardMessage((SMS) Serial.deserialize(intent.getByteArrayExtra(SmsReceiver.MESSAGE)));
-                            Log.i("Debug-SmsService", "Message forwarded");
+                            Log.v("Debug-SmsService", "Message forwarded");
                         } catch (IOException | ClassNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -100,7 +100,7 @@ public class SmsService extends Service {
                         break;
                     case ACTION_RETRIEVE_ALL_UNREAD_MESSAGES:
                         forwardUnreadMessages();
-                        Log.i("Debug-SmsService", "All unread messages in threads called for");
+                        Log.v("Debug-SmsService", "All unread messages in threads called for");
                         break;
                     case READ_PHONE_STATE_PERMISSION_GRANTED:
                         TelephonyManager tMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -178,7 +178,7 @@ public class SmsService extends Service {
                     forwardMessage(sms);
                 } while (cursor.moveToPrevious());
             }
-            Log.v(TAG, "Forwarded " + cursor.getCount() + " total sms");
+            Log.i(TAG, "Forwarded " + cursor.getCount() + " total sms");
             cursor.close();
         }
 
@@ -191,7 +191,7 @@ public class SmsService extends Service {
                     //forwardMessage(mms);
                 } while (cursor.moveToPrevious());
             }
-            Log.v(TAG, "Forwarded " + cursor.getCount() + " total mms");
+            Log.i(TAG, "Forwarded " + cursor.getCount() + " total mms");
             cursor.close();
         }
     }

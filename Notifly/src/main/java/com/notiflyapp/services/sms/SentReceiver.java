@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -42,7 +44,15 @@ public class SentReceiver extends BroadcastReceiver {
             case Activity.RESULT_OK:
                 result = "Message successful";
                 sms.setDate(System.currentTimeMillis());
-                response.putItem(RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT, sms);
+                SMS sentSms = null;
+                Cursor cursor = context.getContentResolver().query(Telephony.Sms.Sent.CONTENT_URI, null, null, null, null);
+                if(cursor != null && cursor.getCount() > 0) {
+                    cursor.moveToFirst();
+                    sentSms = MessageHandler.getSms(cursor);
+                } else {
+                    sentSms = sms;
+                }
+                response.putItem(RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT, sentSms);
                 response.putRequestValue(RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_SENT);
                 RequestHandler.getInstance(context).sendResponse(response);
                 break;

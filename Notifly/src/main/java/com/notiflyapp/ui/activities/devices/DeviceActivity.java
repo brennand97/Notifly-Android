@@ -299,7 +299,7 @@ public class DeviceActivity extends AppCompatActivity {
 
     private void startBluetoothService() {
         Intent bsIntent = new Intent(this, BluetoothService.class);
-        bsIntent.setAction(BluetoothService.CONNECT_ALL_DEVICES);
+        bsIntent.setAction(BluetoothService.CONNECT_LAST_DEVICE);
         startService(bsIntent);
         bluetoothActive = true;
     }
@@ -314,7 +314,7 @@ public class DeviceActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == REQUEST_CODE_BLUETOOTH && resultCode == RESULT_OK) {
             Intent startDevices = new Intent(this, BluetoothService.class);
-            startDevices.setAction(BluetoothService.CONNECT_ALL_DEVICES);
+            startDevices.setAction(BluetoothService.CONNECT_LAST_DEVICE);
             startService(startDevices);
         }
     }

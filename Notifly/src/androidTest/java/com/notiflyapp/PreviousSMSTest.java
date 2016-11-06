@@ -8,10 +8,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
-import android.util.Log;
 
-import com.notiflyapp.data.Contact;
-import com.notiflyapp.data.ConversationThread;
 import com.notiflyapp.data.DataString;
 import com.notiflyapp.data.requestframework.Request;
 import com.notiflyapp.data.requestframework.RequestHandler;
@@ -36,7 +33,7 @@ public class PreviousSMSTest {
 
         Request r = new Request();
         r.putBody(RequestHandler.RequestCode.RETRIEVE_PREVIOUS_SMS);
-        r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_THREAD_ID, new DataString("42"));
+        r.putItem(RequestHandler.RequestCode.EXTRA_THREAD_ID, new DataString("42"));
         r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME, new DataString(String.valueOf(System.currentTimeMillis())));
         r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT, new DataString("20"));
 

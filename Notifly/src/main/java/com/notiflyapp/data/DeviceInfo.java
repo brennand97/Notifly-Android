@@ -137,5 +137,15 @@ public class DeviceInfo extends DataObject<String, File> {
     public boolean getOptionNotification() { return notification; }
     public DeviceInfo setOptionNotification(boolean notification) { this.notification = notification; return this; }
 
-
+    @Override
+    public String toString() {
+        return "DeviceInfo{" +
+                "deviceName='" + deviceName + '\'' +
+                ", deviceMac='" + deviceMac + '\'' +
+                ", deviceType=" + deviceType +
+                ", connect=" + connect +
+                ", sms=" + sms +
+                ", notification=" + notification +
+                '}';
+    }
 }
