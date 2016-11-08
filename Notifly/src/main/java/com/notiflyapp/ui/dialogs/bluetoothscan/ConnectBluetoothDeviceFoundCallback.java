@@ -4,12 +4,10 @@
 
 package com.notiflyapp.ui.dialogs.bluetoothscan;
 
-import android.animation.Animator;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
-import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
+import com.notiflyapp.R;
 import com.notiflyapp.services.bluetooth.scan.BluetoothScanService;
 
 /**
@@ -18,13 +16,11 @@ import com.notiflyapp.services.bluetooth.scan.BluetoothScanService;
 public class ConnectBluetoothDeviceFoundCallback implements BluetoothScanService.DeviceFoundCallback {
 
     private ConnectBluetoothAdapter connectBluetoothAdapter;
-    private ProgressBar progressBar;
-    private TextView scanComplete;
+    private AlertDialog dialog;
 
-    public ConnectBluetoothDeviceFoundCallback(ConnectBluetoothAdapter a, ProgressBar b, TextView c) {
+    public ConnectBluetoothDeviceFoundCallback(AlertDialog dialog, ConnectBluetoothAdapter a) {
+        this.dialog = dialog;
         connectBluetoothAdapter = a;
-        progressBar = b;
-        scanComplete = c;
     }
 
     @Override
@@ -48,30 +44,7 @@ public class ConnectBluetoothDeviceFoundCallback implements BluetoothScanService
 
     @Override
     public void scanComplete() {
-        if(progressBar != null ) {
-            progressBar.animate().alpha(0).setDuration(1000).scaleX(0).scaleY(0).setListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    scanComplete.setVisibility(View.VISIBLE);
-                    scanComplete.animate().alpha(255).setDuration(500);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
-        }
+        dialog.setTitle(R.string.dialog_title_complete);
     }
 
 }

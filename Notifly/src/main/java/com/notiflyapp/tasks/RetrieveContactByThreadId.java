@@ -7,7 +7,6 @@ package com.notiflyapp.tasks;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.Telephony;
 import android.util.Log;
@@ -25,23 +24,24 @@ import java.util.HashSet;
 /**
  * Created by Brennan on 6/25/2016.
  */
-public class ReceiveContactByThreadId extends Thread {
+public class RetrieveContactByThreadId extends Thread {
 
-    private static final String TAG = ReceiveContactByThreadId.class.getSimpleName();
+    private static final String TAG = RetrieveContactByThreadId.class.getSimpleName();
     private Context context;
-
     private Response response;
+    private String threadId;
 
-    public ReceiveContactByThreadId(Context context, Response response) {
+    public RetrieveContactByThreadId(Context context, Response response, String threadId) {
         this.context = context;
         this.response = response;
+        this.threadId = threadId;
     }
 
     @Override
     public void run() {
         ConversationThread t = new ConversationThread();
         t.putBody(new ArrayList<Contact>());
-        t.putExtra(Integer.parseInt(response.getRequestValue()));
+        t.putExtra(Integer.parseInt(threadId));
         Cursor cursorThread = null;
         Cursor cursorConversation = null;
         Cursor cursorContact = null;
@@ -49,7 +49,7 @@ public class ReceiveContactByThreadId extends Thread {
         try {
             cursorThread = context.getContentResolver().query(Uri.parse( "content://mms-sms/conversations?simple=true"),
                     new String[] { Telephony.Threads.ARCHIVED, Telephony.Threads.DATE, Telephony.Threads.RECIPIENT_IDS },
-                    Telephony.Threads._ID + " = ?", new String[]{ response.getRequestValue() }, null);
+                    Telephony.Threads._ID + " = ?", new String[]{ threadId }, null);
             String recipientString;
 
             if (cursorThread == null || cursorThread.getCount() == 0) {
@@ -65,7 +65,7 @@ public class ReceiveContactByThreadId extends Thread {
             recipientString = cursorThread.getString(cursorThread.getColumnIndex(Telephony.Threads.RECIPIENT_IDS));
             String[] recipientIds = recipientString.split(" ");
 
-            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + recipientIds.length + " recipientIds: " + Arrays.toString(recipientIds));
+            Log.v(TAG, "ThreadId: " + threadId + " yielded " + recipientIds.length + " recipientIds: " + Arrays.toString(recipientIds));
 
             cursorConversation = context.getContentResolver().query(Uri.parse("content://mms-sms/canonical-addresses"), new String[]{ "address" }, "_id = ?", recipientIds, null);
 
@@ -87,7 +87,7 @@ public class ReceiveContactByThreadId extends Thread {
                 cursorConversation.moveToNext();
             }
 
-            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + addresses.size() + " addresses: " + addresses);
+            Log.v(TAG, "ThreadId: " + threadId + " yielded " + addresses.size() + " addresses: " + addresses);
 
             //Sorted in descending order so the most recent contacts are used
             cursorContact = context.getContentResolver().query(Phone.CONTENT_URI, null, null, null, Phone._ID + " DESC");
@@ -142,7 +142,7 @@ public class ReceiveContactByThreadId extends Thread {
                 }
             }
 
-            Log.v(TAG, "ThreadId: " + response.getRequestValue() + " yielded " + t.getContacts().length + " contacts: " + Arrays.toString(t.getContacts()));
+            Log.v(TAG, "ThreadId: " + threadId + " yielded " + t.getContacts().length + " contacts: " + Arrays.toString(t.getContacts()));
 
         } catch (NullPointerException e) {
             e.printStackTrace();

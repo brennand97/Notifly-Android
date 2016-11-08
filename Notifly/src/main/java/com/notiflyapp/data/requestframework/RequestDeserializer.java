@@ -33,12 +33,6 @@ public class RequestDeserializer implements JsonDeserializer {
         } catch (NullPointerException e) {
             //DO nothing
         }
-        String requestValue = null;
-        try {
-            requestValue = jsonObject.get("requestValue").getAsString();
-        } catch (NullPointerException e) {
-            //DO nothing
-        }
         HashMap<String, DataObject> hashMap = null;
         try {
             hashMap = jsonDeserializationContext.deserialize(jsonObject.get("hashMap"), new TypeToken<HashMap<String, DataObject>>(){}.getType());
@@ -49,7 +43,6 @@ public class RequestDeserializer implements JsonDeserializer {
         final Request request = new Request();
         request.putBody(body);
         request.putExtra(extra);
-        request.putRequestValue(requestValue);
         request.putHashMap(hashMap);
 
         return request;

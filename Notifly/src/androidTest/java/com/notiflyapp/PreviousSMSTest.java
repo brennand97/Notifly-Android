@@ -34,8 +34,8 @@ public class PreviousSMSTest {
         Request r = new Request();
         r.putBody(RequestHandler.RequestCode.RETRIEVE_PREVIOUS_SMS);
         r.putItem(RequestHandler.RequestCode.EXTRA_THREAD_ID, new DataString("42"));
-        r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME, new DataString(String.valueOf(System.currentTimeMillis())));
-        r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT, new DataString("20"));
+        r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_SMS_START_TIME, new DataString(String.valueOf(System.currentTimeMillis())));
+        r.putItem(RequestHandler.RequestCode.EXTRA_RETRIEVE_SMS_MESSAGE_COUNT, new DataString("20"));
 
         Context context = InstrumentationRegistry.getTargetContext();
         RequestHandler handler = RequestHandler.getInstance(context);

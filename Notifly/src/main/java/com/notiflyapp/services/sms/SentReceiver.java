@@ -53,11 +53,11 @@ public class SentReceiver extends BroadcastReceiver {
                     sentSms = sms;
                 }
                 response.putItem(RequestHandler.RequestCode.EXTRA_SEND_SMS_SMSOBJECT, sentSms);
-                response.putRequestValue(RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_SENT);
+                response.putItem(RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_SENT, null);
                 RequestHandler.getInstance(context).sendResponse(response);
                 break;
             case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                response.putRequestValue(RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_FAILED);
+                response.putItem(RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_FAILED, null);
                 RequestHandler.getInstance(context).sendResponse(response);
                 result = "Message failed";
                 break;

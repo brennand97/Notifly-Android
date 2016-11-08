@@ -31,6 +31,8 @@ public class DataObjectDeserializer implements JsonDeserializer {
                 return jsonDeserializationContext.deserialize(jsonElement, DeviceInfo.class);
             case DataObject.Type.DATA_STRING:
                 return jsonDeserializationContext.deserialize(jsonElement, DataString.class);
+            case DataObject.Type.DATA_BYTE_ARRAY:
+                return jsonDeserializationContext.deserialize(jsonElement, DataByteArray.class);
             case DataObject.Type.REQUEST:
                 return jsonDeserializationContext.deserialize(jsonElement, Request.class);
             case DataObject.Type.RESPONSE:

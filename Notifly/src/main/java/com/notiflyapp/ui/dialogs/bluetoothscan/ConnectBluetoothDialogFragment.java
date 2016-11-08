@@ -13,16 +13,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.notiflyapp.R;
 import com.notiflyapp.services.bluetooth.scan.BluetoothScanService;
@@ -40,6 +36,7 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
     private BluetoothScanService mService;
     private boolean mBound;
     private DeviceFoundCallback mDeviceFoundCallback;
+    private AlertDialog dialog;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -51,12 +48,10 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setTitle(R.string.dialog_title);
+        builder.setTitle(R.string.dialog_title_scanning);
 
         View view = inflater.inflate(R.layout.dialog_fragment, null);
         ListView listView = (ListView) view.findViewById(R.id.dialog_list_view);
-        ProgressBar progressBar = (ProgressBar) view.findViewById(R.id.dialog_scan_progress);
-        TextView scanComplete = (TextView) view.findViewById(R.id.dialog_scan_complete);
 
         connectBluetoothAdapter = new ConnectBluetoothAdapter(getActivity(), new BluetoothDevice[0]);
 
@@ -66,8 +61,9 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
         listView.setOnItemClickListener(connectBluetoothOnItemClickListener);
 
         builder.setView(view);
+        dialog = builder.create();
 
-        mDeviceFoundCallback = new ConnectBluetoothDeviceFoundCallback(connectBluetoothAdapter, progressBar, scanComplete);
+        mDeviceFoundCallback = new ConnectBluetoothDeviceFoundCallback(dialog, connectBluetoothAdapter);
 
         Runnable runnable = new Runnable() {
             @Override
@@ -80,16 +76,12 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if(total % 100 == 0) {
-                        Log.v(ConnectBluetoothDialogFragment.class.getSimpleName(), "BluetoothScanService not connected yet...");
-                        Intent intent = new Intent(getActivity(), BluetoothScanService.class);
-                        getActivity().bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                    if(total % 1000 == 0) {
+                        Log.w(ConnectBluetoothDialogFragment.class.getSimpleName(), "BluetoothScanService not connected yet...");
                     }
                     if(total >= 5000) {
                         Log.w(ConnectBluetoothDialogFragment.class.getSimpleName(), "Failed to connect to service to begin bluetooth discovery");
-                        //TODO update dialog with a scan failed label
-                        //for now a toast will suffice
-                        Toast.makeText(getActivity(), "Bluetooth scan failed.", Toast.LENGTH_LONG).show();
+                        dialog.setTitle(R.string.dialog_title_failed);
                         return;
                     }
                 }
@@ -100,7 +92,7 @@ public class ConnectBluetoothDialogFragment extends DialogFragment {
         };
         (new Thread(runnable)).start();
 
-        return builder.create();
+        return dialog;
 
     }
 

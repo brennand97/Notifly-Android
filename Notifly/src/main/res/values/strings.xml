@@ -5,9 +5,13 @@
 <resources>
     <string name="app_name">Notifly</string>
     <string name="title_activity_fab">FAB</string>
-    <string name="dialog_title">Choose Device</string>
+
+    <string name="dialog_title_complete">Choose Device</string>
+    <string name="dialog_title_scanning">Scanning…</string>
+    <string name="dialog_title_failed">Scan Failed</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_connect">Connect</string>
+
     <string name="permission_failure">Cannot scan without permission.</string>
     <string name="dialog_scan_unknown_name">Unknown</string>
     <string name="dialog_bluetooth_scan_complete">Scan Complete</string>

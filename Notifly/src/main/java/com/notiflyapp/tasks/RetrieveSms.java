@@ -4,18 +4,13 @@
 
 package com.notiflyapp.tasks;
 
-import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
-import android.provider.ContactsContract;
 import android.provider.Telephony;
 import android.util.Log;
 
-import com.notiflyapp.data.Contact;
 import com.notiflyapp.data.DataObject;
-import com.notiflyapp.data.DataString;
 import com.notiflyapp.data.SMS;
 import com.notiflyapp.data.requestframework.RequestHandler;
 import com.notiflyapp.data.requestframework.Response;
@@ -24,28 +19,28 @@ import com.notiflyapp.services.sms.SmsService;
 import com.notiflyapp.sms.SmsReceiver;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * Created by Brennan on 10/5/2016.
  */
 
-public class RetrievePreviousSms extends Thread {
+public class RetrieveSms extends Thread {
 
-    private static final String TAG = RetrievePreviousSms.class.getSimpleName();
+    private static final String TAG = RetrieveSms.class.getSimpleName();
     private Context context;
     private Response response;
     private long startTime;
     private int messageCount;
     private String threadId;
+    private String inequality;
 
-    public RetrievePreviousSms(Context context, Response response, long startTime, int messageCount, String threadId) {
+    public RetrieveSms(Context context, Response response, long startTime, int messageCount, String threadId, String inequality) {
         this.context = context;
         this.response = response;
         this.startTime = startTime;
         this.messageCount = messageCount;
         this.threadId = threadId;
+        this.inequality = inequality;
     }
 
     @Override
@@ -55,7 +50,7 @@ public class RetrievePreviousSms extends Thread {
 
         try {
             cursorThread = context.getContentResolver().query(Telephony.Sms.CONTENT_URI,
-                    null, Telephony.Sms.THREAD_ID + " = ? AND " + Telephony.Sms.DATE + " < ?", new String[]{ threadId, String.valueOf(startTime) }, null);
+                    null, Telephony.Sms.THREAD_ID + " = ? AND " + Telephony.Sms.DATE + inequality + "?", new String[]{ threadId, String.valueOf(startTime) }, null);
 
             if(cursorThread == null) {
                 Log.v(TAG, "cursor null");
@@ -67,6 +62,9 @@ public class RetrievePreviousSms extends Thread {
                 return;
             }
 
+            if(messageCount < 0) {
+                messageCount = cursorThread.getCount();
+            }
             Log.i(TAG, cursorThread.getCount() + " messages found for thread id " + threadId);
             cursorThread.moveToFirst();
             DataObject[] messages = new DataObject[messageCount];

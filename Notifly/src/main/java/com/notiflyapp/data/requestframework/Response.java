@@ -20,7 +20,6 @@ public class Response extends DataObject<String , UUID> {
 
     //Body id the request string
     //Extra is UUID of specific message
-    private String requestValue;
     private HashMap<String, DataObject> hashMap = new HashMap<>();   //Contains all data asked for in the request, keys are the extras associated with the request key
 
     protected Response() {
@@ -32,7 +31,6 @@ public class Response extends DataObject<String , UUID> {
         Response response = new Response();
         response.putBody(request.getBody());
         response.putExtra(request.getExtra());
-        response.putRequestValue(request.getRequestValue());
         return response;
     }
 
@@ -57,26 +55,12 @@ public class Response extends DataObject<String , UUID> {
         hashMap.put(key, object);
     }
 
+    public HashMap<String, DataObject> getHashMap() {
+        return hashMap;
+    }
+
     protected void putHashMap(HashMap<String, DataObject> map) {
         hashMap = map;
-    }
-
-    /**
-     * Returns the value associated with the requestKey (found in body)
-     *
-     * @return the value corresponding to requested data
-     */
-    public String getRequestValue() {
-        return requestValue;
-    }
-
-    /**
-     * Sets the value that is associated with requestKey (found in body)
-     *
-     * @param requestValue that corresponds to the requested data
-     */
-    public void putRequestValue(String requestValue) {
-        this.requestValue = requestValue;
     }
 
     /**

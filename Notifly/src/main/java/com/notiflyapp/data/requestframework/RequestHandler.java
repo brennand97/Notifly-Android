@@ -11,9 +11,10 @@ import android.util.Log;
 import com.notiflyapp.data.DataString;
 import com.notiflyapp.data.Serial;
 import com.notiflyapp.services.sms.SmsService;
-import com.notiflyapp.tasks.ReceiveContactByThreadId;
+import com.notiflyapp.tasks.RetrieveContactByThreadId;
 import com.notiflyapp.services.bluetooth.connection.BluetoothClient;
-import com.notiflyapp.tasks.RetrievePreviousSms;
+import com.notiflyapp.tasks.RetrieveContactPicture;
+import com.notiflyapp.tasks.RetrieveSms;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class RequestHandler {
     public final static class RequestCode {
 
         public final static String EXTRA_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA__THREAD_ID";
+        public final static String EXTRA_CONTACT_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_ID";
 
         public final static String CONTACT_BY_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONTACT_BY_THREAD_ID";
             public final static String EXTRA_CONTACT_BY_THREAD_ID_THREAD = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_CONTACT_BY_THREAD_ID_THREAD";
@@ -37,13 +39,19 @@ public class RequestHandler {
             public final static String CONFIRMATION_SEND_SMS_SENT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_SENT";
             public final static String CONFIRMATION_SEND_SMS_FAILED = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.CONFIRMATION_SEND_SMS_FAILED";
 
-        public final static String RETRIEVE_PREVIOUS_SMS = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.RETRIEVE_PREVIOUS_SMS";
-            public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME";
-            public final static String EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT";
+        public final static String RETRIEVE_SMS = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.RETRIEVE_SMS";
+            public final static String EXTRA_RETRIEVE_SMS_START_TIME = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_SMS_START_TIME";
+            public final static String EXTRA_RETRIEVE_SMS_MESSAGE_COUNT = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_SMS_MESSAGE_COUNT";
+            public final static String EXTRA_RETRIEVE_SMS_OLD = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_SMS_OLD";
+            public final static String EXTRA_RETRIEVE_SMS_NEW = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_RETRIEVE_SMS_NEW";
             //EXTRA_THREAD_ID
 
         public final static String PUSH_THREAD_ID = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.PUSH_THREAD_ID";
             //EXTRA_THREAD_ID
+
+        public final static String RETRIEVE_CONTACT_PICTURE = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.RETRIEVE_CONTACT_PICTURE";
+            public final static String EXTRA_PICTURE_BYTE_ARRAY = "com.notiflyapp.data.requestframework.RequestHandler.RequestCode.EXTRA_PICTURE_BYTE_ARRAY";
+            //EXTRA_CONTACT_ID
     }
 
     private HashMap<String, Request> requestHashMap = new HashMap<>();              //String is the UUID of the request in string form and the Request object is the request itself
@@ -71,6 +79,8 @@ public class RequestHandler {
     }
 
     public void handleRequest(BluetoothClient client, Request request) {
+        String threadId;
+
         if(client != null) {
             Log.v(TAG, "Received request : " + request.getExtra().toString() + " from : " + client.getDeviceMac() + " for : " + request.getBody());
         } else {
@@ -80,8 +90,14 @@ public class RequestHandler {
         Response response = Response.makeResponse(request);
         switch (request.getBody()) {
             case RequestCode.CONTACT_BY_THREAD_ID:
-                ReceiveContactByThreadId task = new ReceiveContactByThreadId(context, response);
+                threadId = ((DataString) request.getItem(RequestCode.EXTRA_THREAD_ID)).getBody();
+                RetrieveContactByThreadId task = new RetrieveContactByThreadId(context, response, threadId);
                 task.start();
+                break;
+            case RequestCode.RETRIEVE_CONTACT_PICTURE:
+                long contactId = Long.parseLong(((DataString) request.getItem(RequestCode.EXTRA_CONTACT_ID)).getBody());
+                RetrieveContactPicture retrieveContactPicture = new RetrieveContactPicture(context, response, contactId);
+                retrieveContactPicture.start();
                 break;
             case RequestCode.SEND_SMS:
                 try {
@@ -94,17 +110,25 @@ public class RequestHandler {
                     e.printStackTrace();
                 }
                 break;
-            case RequestCode.RETRIEVE_PREVIOUS_SMS:
-                String startTime = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_START_TIME)).getBody();
-                String messageCount = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_PREVIOUS_SMS_MESSAGE_COUNT)).getBody();
-                String threadId = ((DataString) request.getItem(RequestCode.EXTRA_THREAD_ID)).getBody();
+            case RequestCode.RETRIEVE_SMS:
+                String startTime = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_SMS_START_TIME)).getBody();
+                String messageCount = ((DataString) request.getItem(RequestCode.EXTRA_RETRIEVE_SMS_MESSAGE_COUNT)).getBody();
+                threadId = ((DataString) request.getItem(RequestCode.EXTRA_THREAD_ID)).getBody();
+                String inequality;
+                if(request.getHashMap().containsKey(RequestCode.EXTRA_RETRIEVE_SMS_OLD)) {
+                    inequality = "<";
+                } else if(request.getHashMap().containsKey(RequestCode.EXTRA_RETRIEVE_SMS_NEW)) {
+                    inequality = ">";
+                } else {
+                    inequality = "=";
+                }
                 if(startTime == null || messageCount == null || threadId == null) {
                     RequestHandler.getInstance(context).sendResponse(response);
                 }
                 try {
                     long startTimeLong = Long.parseLong(startTime);
                     int messageCountInt = Integer.parseInt(messageCount);
-                    RetrievePreviousSms retrievePreviousSmsTask = new RetrievePreviousSms(context, response, startTimeLong, messageCountInt, threadId);
+                    RetrieveSms retrievePreviousSmsTask = new RetrieveSms(context, response, startTimeLong, messageCountInt, threadId, inequality);
                     retrievePreviousSmsTask.start();
                 } catch (NumberFormatException e) {
                     e.printStackTrace();

@@ -27,6 +27,7 @@ public abstract class DataObject< A, B > implements Serializable {
         public final static String NOTIFICATION = "notification";
         public final static String DEVICE_INFO = "device_info";
         public final static String DATA_STRING = "data_string";
+        public final static String DATA_BYTE_ARRAY = "data_byte_array";
         public final static String REQUEST = "request";
         public final static String RESPONSE = "response";
         public final static String CONTACT = "contact";

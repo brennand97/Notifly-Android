@@ -88,11 +88,37 @@ public class DeviceActivity extends AppCompatActivity {
                 switch (intent.getAction()) {
                     case BluetoothService.DEVICE_CONNECTED:
                         devicePosition = intent.getIntExtra(BluetoothService.DEVICE_DATABASE_POSITION, -1);
-                        Log.v(TAG, "Received device connect in UI.");
-
                         try {
                             DeviceInfo deviceInfo = deviceDatabase.getDeviceInfo(devicePosition);
+                            Toast.makeText(getApplicationContext(), deviceInfo.getDeviceName() + " connected.", Toast.LENGTH_SHORT).show();
                             listAdapter.setCurrentConnected(deviceInfo);
+                            listAdapter.setCurrentConnecting(null);
+                            listAdapter.notifyDataSetChanged();
+                        } catch (DeviceNotFoundException | NullCursorException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case BluetoothService.DEVICE_CONNECTING:
+                        devicePosition = intent.getIntExtra(BluetoothService.DEVICE_DATABASE_POSITION, -1);
+                        try {
+                            DeviceInfo deviceInfo = deviceDatabase.getDeviceInfo(devicePosition);
+                            listAdapter.setCurrentConnecting(deviceInfo);
+                            listAdapter.notifyDataSetChanged();
+                        } catch (DeviceNotFoundException | NullCursorException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case BluetoothService.DEVICE_CONNECT_FAILED:
+                        devicePosition = intent.getIntExtra(BluetoothService.DEVICE_DATABASE_POSITION, -1);
+                        try {
+                            if(devicePosition >= 0) {
+                                DeviceInfo deviceInfo = deviceDatabase.getDeviceInfo(devicePosition);
+                                Toast.makeText(getApplicationContext(), deviceInfo.getDeviceName() + " failed.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Connection failed.", Toast.LENGTH_SHORT).show();
+                            }
+                            listAdapter.setCurrentConnected(null);
+                            listAdapter.setCurrentConnecting(null);
                             listAdapter.notifyDataSetChanged();
                         } catch (DeviceNotFoundException | NullCursorException e) {
                             e.printStackTrace();
@@ -100,10 +126,19 @@ public class DeviceActivity extends AppCompatActivity {
                         break;
                     case BluetoothService.DEVICE_DISCONNECTED:
                         devicePosition = intent.getIntExtra(BluetoothService.DEVICE_DATABASE_POSITION, -1);
-                        Log.v(TAG, "Received device disconnect in UI.");
-
-                        listAdapter.setCurrentConnected(null);
-                        listAdapter.notifyDataSetChanged();
+                        try {
+                            if(devicePosition >= 0) {
+                                DeviceInfo deviceInfo = deviceDatabase.getDeviceInfo(devicePosition);
+                                Toast.makeText(getApplicationContext(), deviceInfo.getDeviceName() + " disconnected.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Connection disconnected.", Toast.LENGTH_SHORT).show();
+                            }
+                            listAdapter.setCurrentConnected(null);
+                            listAdapter.setCurrentConnecting(null);
+                            listAdapter.notifyDataSetChanged();
+                        } catch (DeviceNotFoundException | NullCursorException e) {
+                            e.printStackTrace();
+                        }
                         break;
                 }
 
@@ -225,6 +260,12 @@ public class DeviceActivity extends AppCompatActivity {
 
         LocalBroadcastManager.getInstance(this).registerReceiver((bluetoothMessageReceiver),
                 new IntentFilter(BluetoothService.DEVICE_CONNECTED)
+        );
+        LocalBroadcastManager.getInstance(this).registerReceiver((bluetoothMessageReceiver),
+                new IntentFilter(BluetoothService.DEVICE_CONNECTING)
+        );
+        LocalBroadcastManager.getInstance(this).registerReceiver((bluetoothMessageReceiver),
+                new IntentFilter(BluetoothService.DEVICE_CONNECT_FAILED)
         );
         LocalBroadcastManager.getInstance(this).registerReceiver((bluetoothMessageReceiver),
                 new IntentFilter(BluetoothService.DEVICE_DISCONNECTED)

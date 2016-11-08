@@ -97,20 +97,21 @@ public class ConnectBluetoothAdapter extends BaseAdapter {
 
         BluetoothDevice device = devices.get(position);
 
-        ImageView imageView = (ImageView) convertView.findViewById(R.id.dialog_list_image);
-        TextView textView = (TextView) convertView.findViewById(R.id.dialog_list_text);
+        ImageView imageView = (ImageView) convertView.findViewById(R.id.dialog_image_type);
+        TextView nameView = (TextView) convertView.findViewById(R.id.dialog_text_name);
+        TextView macView = (TextView) convertView.findViewById(R.id.dialog_text_mac);
 
         //TODO set imageView with appropriate icon
 
         String name = device.getName();
-        String address = device.getAddress();
-        String text;
-        if(name != null) {
-            text = name + "\n" + address;
-        } else {
-            text = context.getString(R.string.dialog_scan_unknown_name) + "\n" + address;
+        if(name == null) {
+            name = "Unknown";
         }
-        textView.setText(text);
+        String address = device.getAddress();
+
+        imageView.setImageResource(R.mipmap.phone_red);
+        nameView.setText(name);
+        macView.setText(address);
 
         return convertView;
 

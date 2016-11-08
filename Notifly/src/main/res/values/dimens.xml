@@ -16,4 +16,7 @@
     <dimen name="list_view_vertical_padding">25dp</dimen>
     <dimen name="list_view_small_icon_spacing">35dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="dialog_margin">50dp</dimen>
+    <dimen name="dialog_image_padding">10dp</dimen>
 </resources>

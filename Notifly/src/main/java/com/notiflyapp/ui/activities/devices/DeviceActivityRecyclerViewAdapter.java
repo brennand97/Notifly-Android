@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.notiflyapp.R;
@@ -34,6 +35,7 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
         TextView textName, textMac;
         ImageView imageType;
         Button connectBtn, smsBtn;
+        ProgressBar connecting;
 
         DeviceInfoViewHolder(View view) {
             super(view);
@@ -43,12 +45,14 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
             imageType = (ImageView) view.findViewById(R.id.image_type);
             connectBtn = (Button) view.findViewById(R.id.btn_connect);
             smsBtn = (Button) view.findViewById(R.id.btn_sms);
+            connecting = (ProgressBar) view.findViewById(R.id.device_connecting_progress_bar);
         }
     }
 
     private ArrayList<DeviceInfo> devices;
     private Activity activity;
     private DeviceInfo currentConnected = null;
+    private DeviceInfo currentConnecting = null;
 
     public DeviceActivityRecyclerViewAdapter(Activity activity, ArrayList<DeviceInfo> deviceInfoArrayList) {
         this.activity = activity;
@@ -73,9 +77,16 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
 
         if(currentConnected != null && deviceInfo.getDeviceMac().equals(currentConnected.getDeviceMac())) {
             holder.cardView.setBackgroundColor(activity.getResources().getColor(R.color.cardViewConnected));
+            holder.connecting.setVisibility(View.GONE);
         } else {
             holder.cardView.setBackgroundColor(activity.getResources().getColor(R.color.cardView));
+            if(currentConnecting != null && deviceInfo.getDeviceMac().equals(currentConnecting.getDeviceMac())) {
+                holder.connecting.setVisibility(View.VISIBLE);
+            } else {
+                holder.connecting.setVisibility(View.GONE);
+            }
         }
+
     }
 
     @Override
@@ -154,5 +165,13 @@ public class DeviceActivityRecyclerViewAdapter extends RecyclerView.Adapter<Devi
     public void setCurrentConnected(DeviceInfo currentConnected) {
         this.currentConnected = currentConnected;
     }
+    public DeviceInfo getCurrentConnecting() {
+        return currentConnecting;
+    }
+
+    public void setCurrentConnecting(DeviceInfo currentConnecting) {
+        this.currentConnecting = currentConnecting;
+    }
+
 
 }

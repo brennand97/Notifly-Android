@@ -5,7 +5,10 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="200dp"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="@dimen/dialog_image_padding"
+    android:layout_marginBottom="@dimen/dialog_margin"
+    android:layout_marginTop="@dimen/dialog_margin">
 
     <ListView
         android:layout_width="match_parent"
@@ -13,27 +16,5 @@
         android:layout_alignParentTop="true"
         android:id="@+id/dialog_list_view" />
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/dialog_list_view"
-        android:padding="10dp"
-        android:id="@+id/dialog_scan_progress"
-        style="@android:style/Widget.Material.ProgressBar"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/dialog_list_view"
-        android:padding="10dp"
-        android:gravity="center_vertical"
-        android:textSize="20sp"
-        android:textAlignment="center"
-        android:id="@+id/dialog_scan_complete"
-        android:visibility="invisible"
-        android:alpha="0"
-        android:text="@string/dialog_bluetooth_scan_complete"/>
 
 </RelativeLayout>
